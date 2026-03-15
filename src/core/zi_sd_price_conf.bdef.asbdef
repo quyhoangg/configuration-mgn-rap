@@ -13,80 +13,88 @@ etag master ChangedAt
   update;
   delete;
 
-  field ( readonly ) ReqId, ReqItemId;
+  field ( readonly, numbering : managed ) ReqId, ReqItemId;
   field ( readonly, numbering : managed ) ItemId;
 
   field ( readonly ) SourceItemId, ConfId;
 
   field ( readonly )
-    OldBranchId,
-    OldEnvId,
-    OldCustGroup,
-    OldMaterialGrp,
-    OldMaxDiscount,
-    OldMinOrderVal,
-    OldApproverGrp,
-    OldCurrency,
-    OldValidFrom,
-    OldValidTo,
-    OldVersionNo;
+  OldBranchId,
+  OldEnvId,
+  OldCustGroup,
+  OldMaterialGrp,
+  OldMaxDiscount,
+  OldMinOrderVal,
+  OldApproverGrp,
+  OldCurrency,
+  OldValidFrom,
+  OldValidTo,
+  OldVersionNo;
 
   field ( readonly )
-    CreatedBy, CreatedAt, ChangedBy, ChangedAt, VersionNo;
+  CreatedBy, CreatedAt, ChangedBy, ChangedAt, VersionNo, LineStatus;
 
   field ( mandatory ) EnvId, BranchId, CustGroup;
-
-  draft action Edit;
-  draft action Activate;
-  draft action Discard;
-  draft action Resume;
-  draft determine action Prepare;
 
   determination set_defaults on modify { create; }
   validation validate_mandatory on save { create; update; }
   validation validate_dates on save { create; update; }
   validation validate_business on save { create; update; }
 
+  action approve result [1] $self;
+
+  draft action Edit;
+  draft action Activate;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare
+  {
+    validation validate_mandatory;
+    validation validate_dates;
+    validation validate_business;
+  }
+
+
   mapping for zsd_price_req
   {
-    ReqId           = req_id;
-    ReqItemId       = req_item_id;
-    ItemId          = item_id;
+    ReqId = req_id;
+    ReqItemId = req_item_id;
+    ItemId = item_id;
 
-    SourceItemId    = source_item_id;
-    ConfId          = conf_id;
-    ActionType      = action_type;
+    SourceItemId = source_item_id;
+    ConfId = conf_id;
+    ActionType = action_type;
 
-    BranchId        = branch_id;
-    EnvId           = env_id;
-    CustGroup       = cust_group;
-    MaterialGrp     = material_grp;
-    MaxDiscount     = max_discount;
-    MinOrderVal     = min_order_val;
-    ApproverGrp     = approver_grp;
-    Currency        = currency;
-    ValidFrom       = valid_from;
-    ValidTo         = valid_to;
-    VersionNo       = version_no;
+    BranchId = branch_id;
+    EnvId = env_id;
+    CustGroup = cust_group;
+    MaterialGrp = material_grp;
+    MaxDiscount = max_discount;
+    MinOrderVal = min_order_val;
+    ApproverGrp = approver_grp;
+    Currency = currency;
+    ValidFrom = valid_from;
+    ValidTo = valid_to;
+    VersionNo = version_no;
 
-    LineStatus      = line_status;
-    ChangeNote      = change_note;
+    LineStatus = line_status;
+    ChangeNote = change_note;
 
-    OldBranchId     = old_branch_id;
-    OldEnvId        = old_env_id;
-    OldCustGroup    = old_cust_group;
-    OldMaterialGrp  = old_material_grp;
-    OldMaxDiscount  = old_max_discount;
-    OldMinOrderVal  = old_min_order_val;
-    OldApproverGrp  = old_approver_grp;
-    OldCurrency     = old_currency;
-    OldValidFrom    = old_valid_from;
-    OldValidTo      = old_valid_to;
-    OldVersionNo    = old_version_no;
+    OldBranchId = old_branch_id;
+    OldEnvId = old_env_id;
+    OldCustGroup = old_cust_group;
+    OldMaterialGrp = old_material_grp;
+    OldMaxDiscount = old_max_discount;
+    OldMinOrderVal = old_min_order_val;
+    OldApproverGrp = old_approver_grp;
+    OldCurrency = old_currency;
+    OldValidFrom = old_valid_from;
+    OldValidTo = old_valid_to;
+    OldVersionNo = old_version_no;
 
-    CreatedBy       = created_by;
-    CreatedAt       = created_at;
-    ChangedBy       = changed_by;
-    ChangedAt       = changed_at;
+    CreatedBy = created_by;
+    CreatedAt = created_at;
+    ChangedBy = changed_by;
+    ChangedAt = changed_at;
   }
 }

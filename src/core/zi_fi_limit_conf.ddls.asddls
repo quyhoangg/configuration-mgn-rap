@@ -4,7 +4,7 @@
 @Metadata.ignorePropagatedAnnotations: true
 define root view entity ZI_FI_LIMIT_CONF
   as select from zfilimitreq
-  
+
   association [1..1] to ZI_ENV_DEF as _Env    on $projection.EnvId    = _Env.EnvId
   association [1..1] to ZI_ENV_DEF as _OldEnv on $projection.OldEnvId = _OldEnv.EnvId
 {
@@ -42,7 +42,6 @@ define root view entity ZI_FI_LIMIT_CONF
       @EndUserText.label: 'Change Note'
       change_note       as ChangeNote,
 
-      // Old snapshot
       @EndUserText.label: 'Old Environment'
       old_env_id        as OldEnvId,
 

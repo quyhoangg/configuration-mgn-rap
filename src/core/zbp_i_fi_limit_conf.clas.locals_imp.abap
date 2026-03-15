@@ -1,57 +1,67 @@
 CLASS lhc_limitconf DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
-    METHODS setAdminFields FOR DETERMINE ON MODIFY
-      IMPORTING keys FOR LimitConf~setAdminFields.
 
-    METHODS validateMandatory FOR VALIDATE ON SAVE
-      IMPORTING keys FOR LimitConf~validateMandatory.
+    METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
+      IMPORTING REQUEST requested_authorizations FOR LimitConf RESULT result.
 
-    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
-      IMPORTING keys REQUEST requested_authorizations
-      FOR LimitConf RESULT result.
+    METHODS set_defaults FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR LimitConf~set_defaults.
+
+    METHODS validate_mandatory FOR VALIDATE ON SAVE
+      IMPORTING keys FOR LimitConf~validate_mandatory.
+
+    METHODS validate_business FOR VALIDATE ON SAVE
+      IMPORTING keys FOR LimitConf~validate_business.
+
 ENDCLASS.
 
 
 CLASS lhc_limitconf IMPLEMENTATION.
 
-  METHOD setAdminFields.
-    READ ENTITIES OF zi_fi_limit_conf IN LOCAL MODE
-      ENTITY LimitConf
-        FIELDS ( CreatedBy CreatedAt ChangedBy ChangedAt )
-        WITH CORRESPONDING #( keys )
-      RESULT DATA(entities).
-
-    MODIFY ENTITIES OF zi_fi_limit_conf IN LOCAL MODE
-      ENTITY LimitConf
-        UPDATE FIELDS ( CreatedBy CreatedAt ChangedBy ChangedAt )
-        WITH VALUE #( FOR entity IN entities
-          ( %tky      = entity-%tky
-            CreatedBy = COND #( WHEN entity-CreatedBy IS INITIAL
-                                THEN sy-uname
-                                ELSE entity-CreatedBy )
-            CreatedAt = COND #( WHEN entity-CreatedAt IS INITIAL
-                                THEN cl_abap_context_info=>get_system_time( )
-                                ELSE entity-CreatedAt )
-            ChangedBy = sy-uname
-            ChangedAt = cl_abap_context_info=>get_system_time( )
-          ) )
-      REPORTED DATA(update_reported).
-
-    reported = CORRESPONDING #( DEEP update_reported ).
+  METHOD get_global_authorizations.
+    result = VALUE #(
+      %create = if_abap_behv=>auth-allowed
+      %update = if_abap_behv=>auth-allowed
+      %delete = if_abap_behv=>auth-allowed ).
   ENDMETHOD.
 
 
-  METHOD validateMandatory.
+  METHOD set_defaults.
     READ ENTITIES OF zi_fi_limit_conf IN LOCAL MODE
       ENTITY LimitConf
-        FIELDS ( EnvId ExpenseType GlAccount AutoApprLim )
-        WITH CORRESPONDING #( keys )
-      RESULT DATA(entities).
+      ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_data).
 
-    LOOP AT entities INTO DATA(entity).
-      IF entity-EnvId IS INITIAL.
-        APPEND VALUE #( %tky = entity-%tky ) TO failed-limitconf.
-        APPEND VALUE #( %tky = entity-%tky
+    MODIFY ENTITIES OF zi_fi_limit_conf IN LOCAL MODE
+      ENTITY LimitConf
+      UPDATE FIELDS ( VersionNo ActionType Currency )
+      WITH VALUE #(
+        FOR r IN lt_data (
+          %tky       = r-%tky
+          VersionNo  = COND i(
+                         WHEN r-VersionNo IS INITIAL THEN 1
+                         ELSE r-VersionNo )
+          ActionType = COND #(
+                         WHEN r-ActionType IS INITIAL THEN 'CREATE'
+                         ELSE r-ActionType )
+          Currency   = COND #(
+                         WHEN r-Currency IS INITIAL THEN 'VND'
+                         ELSE r-Currency )
+        )
+      ).
+  ENDMETHOD.
+
+
+  METHOD validate_mandatory.
+    READ ENTITIES OF zi_fi_limit_conf IN LOCAL MODE
+      ENTITY LimitConf
+      ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_data).
+
+    LOOP AT lt_data ASSIGNING FIELD-SYMBOL(<r>).
+      IF <r>-EnvId IS INITIAL.
+        APPEND VALUE #( %tky = <r>-%tky ) TO failed-limitconf.
+        APPEND VALUE #( %tky = <r>-%tky
                         %msg = new_message_with_text(
                           severity = if_abap_behv_message=>severity-error
                           text     = 'Environment ID is mandatory' )
@@ -59,9 +69,9 @@ CLASS lhc_limitconf IMPLEMENTATION.
         ) TO reported-limitconf.
       ENDIF.
 
-      IF entity-ExpenseType IS INITIAL.
-        APPEND VALUE #( %tky = entity-%tky ) TO failed-limitconf.
-        APPEND VALUE #( %tky = entity-%tky
+      IF <r>-ExpenseType IS INITIAL.
+        APPEND VALUE #( %tky = <r>-%tky ) TO failed-limitconf.
+        APPEND VALUE #( %tky = <r>-%tky
                         %msg = new_message_with_text(
                           severity = if_abap_behv_message=>severity-error
                           text     = 'Expense Type is mandatory' )
@@ -69,9 +79,9 @@ CLASS lhc_limitconf IMPLEMENTATION.
         ) TO reported-limitconf.
       ENDIF.
 
-      IF entity-GlAccount IS INITIAL.
-        APPEND VALUE #( %tky = entity-%tky ) TO failed-limitconf.
-        APPEND VALUE #( %tky = entity-%tky
+      IF <r>-GlAccount IS INITIAL.
+        APPEND VALUE #( %tky = <r>-%tky ) TO failed-limitconf.
+        APPEND VALUE #( %tky = <r>-%tky
                         %msg = new_message_with_text(
                           severity = if_abap_behv_message=>severity-error
                           text     = 'GL Account is mandatory' )
@@ -79,9 +89,9 @@ CLASS lhc_limitconf IMPLEMENTATION.
         ) TO reported-limitconf.
       ENDIF.
 
-      IF entity-AutoApprLim IS INITIAL OR entity-AutoApprLim <= 0.
-        APPEND VALUE #( %tky = entity-%tky ) TO failed-limitconf.
-        APPEND VALUE #( %tky = entity-%tky
+      IF <r>-AutoApprLim IS INITIAL OR <r>-AutoApprLim <= 0.
+        APPEND VALUE #( %tky = <r>-%tky ) TO failed-limitconf.
+        APPEND VALUE #( %tky = <r>-%tky
                         %msg = new_message_with_text(
                           severity = if_abap_behv_message=>severity-error
                           text     = 'Auto Approval Limit must be > 0' )
@@ -92,12 +102,25 @@ CLASS lhc_limitconf IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_instance_authorizations.
-    result = VALUE #( FOR key IN keys
-      ( %tky    = key-%tky
-        %update = if_abap_behv=>auth-allowed
-        %delete = if_abap_behv=>auth-allowed
-      ) ).
+  METHOD validate_business.
+    READ ENTITIES OF zi_fi_limit_conf IN LOCAL MODE
+      ENTITY LimitConf
+      ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_data).
+
+    LOOP AT lt_data ASSIGNING FIELD-SYMBOL(<r>).
+      IF <r>-Currency IS NOT INITIAL AND
+         <r>-Currency <> 'VND' AND
+         <r>-Currency <> 'USD' AND
+         <r>-Currency <> 'EUR'.
+        APPEND VALUE #( %tky = <r>-%tky ) TO failed-limitconf.
+        APPEND VALUE #( %tky = <r>-%tky
+                        %msg = new_message_with_text(
+                          severity = if_abap_behv_message=>severity-error
+                          text     = |Currency { <r>-Currency } is not supported. Use VND/USD/EUR.| )
+        ) TO reported-limitconf.
+      ENDIF.
+    ENDLOOP.
   ENDMETHOD.
 
 ENDCLASS.

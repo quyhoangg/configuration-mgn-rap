@@ -1,4 +1,5 @@
-CLASS zbp_i_fi_limit_conf DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF zi_fi_limit_conf.
+CLASS zbp_i_fi_limit_conf DEFINITION PUBLIC ABSTRACT FINAL
+  FOR BEHAVIOR OF zi_fi_limit_conf.
 ENDCLASS.
 
 CLASS zbp_i_fi_limit_conf IMPLEMENTATION.

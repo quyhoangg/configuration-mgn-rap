@@ -1,5 +1,0 @@
-CLASS zbp_i_mm_route_req DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF zi_mm_route_req.
-ENDCLASS.
-
-CLASS zbp_i_mm_route_req IMPLEMENTATION.
-ENDCLASS.

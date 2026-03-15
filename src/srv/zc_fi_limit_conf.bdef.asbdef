@@ -13,4 +13,25 @@ define behavior for ZC_FI_LIMIT_CONF
   use action Discard;
   use action Resume;
   use action Prepare;
+
+  field ( readonly )
+    OldEnvId,
+    OldExpenseType,
+    OldGlAccount,
+    OldAutoApprLim,
+    OldCurrency,
+    OldVersionNo,
+    ReqId,
+    ReqItemId,
+    ItemId,
+    SourceItemId,
+    ConfId,
+    ActionType,
+    LineStatus,
+    ChangeNote,
+    VersionNo,
+    CreatedBy,
+    CreatedAt,
+    ChangedBy,
+    ChangedAt;
 }

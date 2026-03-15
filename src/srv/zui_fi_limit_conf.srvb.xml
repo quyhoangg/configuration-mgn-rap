@@ -16,15 +16,15 @@
      <BIND_TYPE_VERSION>V4</BIND_TYPE_VERSION>
      <SERVICES>
       <item>
-       <SERVICE_NAME>ZUI_FI_LIMIT_CONF</SERVICE_NAME>
+       <SERVICE_NAME>ZSD_FI_LIMIT_CONF</SERVICE_NAME>
        <SERVICE_CONTENT>
         <item>
          <SERVICE_VERSION>0001</SERVICE_VERSION>
          <RELEASE_STATE>NOT_RELEASED</RELEASE_STATE>
          <SRVD_REF>
-          <URI>/sap/bc/adt/ddic/srvd/sources/zui_fi_limit_conf</URI>
+          <URI>/sap/bc/adt/ddic/srvd/sources/zsd_fi_limit_conf</URI>
           <TYPE>SRVD/SRV</TYPE>
-          <NAME>ZUI_FI_LIMIT_CONF</NAME>
+          <NAME>ZSD_FI_LIMIT_CONF</NAME>
          </SRVD_REF>
          <BIND_TYPE_DATA>
           <CONTENT>

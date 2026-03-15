@@ -43,6 +43,10 @@ authorization master ( instance )
   action ( features : instance ) reject result [1] $self;
   action ( features : instance ) promote result [1] $self;
 
+  static action createFromCatalog
+    parameter ZC_REQ_FROM_CATALOG_P
+    result [1] ZC_REQ_NAV_CTX;
+
   validation validate_before_save on save { create; update; }
   // determination set_default_and_admin_fields on modify { create; update; }
 

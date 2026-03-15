@@ -1,4 +1,5 @@
 @EndUserText.label: 'Service for SD Price Config'
 define service ZSD_SD_PRICE_CONF {
   expose ZC_SD_PRICE_CONF as SDPriceConf;
+  expose ZC_ENV_DEF as EnvDef;
 }

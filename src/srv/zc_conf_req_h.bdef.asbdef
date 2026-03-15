@@ -17,6 +17,8 @@ define behavior for ZC_CONF_REQ_H
   use action submit;
   use action approve;
   use action reject;
+  use action promote;
+  use action createFromCatalog;
 
   use association _Items { create; with draft; }
 }

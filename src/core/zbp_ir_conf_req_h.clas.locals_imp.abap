@@ -35,6 +35,9 @@ CLASS lhc_Req DEFINITION INHERITING FROM cl_abap_behavior_handler.
       IMPORTING keys FOR Req~validate_before_save.
     METHODS promote FOR MODIFY IMPORTING keys FOR ACTION Req~promote RESULT result.
 
+    METHODS createFromCatalog FOR MODIFY
+      IMPORTING keys FOR ACTION Req~createFromCatalog RESULT result.
+
 ENDCLASS.
 
 CLASS lhc_Req IMPLEMENTATION.
@@ -357,6 +360,82 @@ CLASS lhc_Req IMPLEMENTATION.
     result = VALUE #( FOR r IN reqs ( %tky = r-%tky ) ).
   ENDMETHOD.
 
+
+  METHOD createFromCatalog.
+
+    LOOP AT keys INTO DATA(ls_key).
+
+      DATA: lv_req_id      TYPE sysuuid_x16,
+            lv_req_item_id TYPE sysuuid_x16,
+            lv_cid_req     TYPE string,
+            lv_target_app  TYPE string.
+
+      lv_req_id      = cl_system_uuid=>create_uuid_x16_static( ).
+      lv_req_item_id = cl_system_uuid=>create_uuid_x16_static( ).
+      lv_cid_req     = |REQ_{ sy-tabix }|.
+
+      CASE ls_key-%param-TargetCds.
+        WHEN 'ZI_MM_ROUTE_CONF'.
+          lv_target_app = 'MM_ROUTE_REQ'.
+        WHEN 'ZI_MM_SAFE_STOCK'.
+          lv_target_app = 'MM_SAFE_REQ'.
+        WHEN 'ZI_SD_PRICE_CONF'.
+          lv_target_app = 'SD_PRICE_REQ'.
+        WHEN 'ZI_FI_LIMIT_CONF'.
+          lv_target_app = 'FI_LIMIT_REQ'.
+        WHEN OTHERS.
+          lv_target_app = 'CONF_REQ'.
+      ENDCASE.
+
+      MODIFY ENTITIES OF zir_conf_req_h IN LOCAL MODE
+        ENTITY Req
+          CREATE FIELDS ( ReqId ModuleId ReqTitle Description Status Reason )
+          WITH VALUE #(
+            ( %cid        = lv_cid_req
+              ReqId       = lv_req_id
+              ModuleId    = ls_key-%param-ModuleId
+              ReqTitle    = |Maintain { ls_key-%param-ConfName }|
+              Description = |Auto-created from catalog|
+              Status      = gc_st_draft
+              Reason      = ls_key-%param-Reason
+            )
+          )
+        ENTITY Req
+          CREATE BY \_Items
+          FIELDS ( ReqItemId ConfId Action TargetEnvId Notes VersionNo )
+          WITH VALUE #(
+            ( %cid_ref = lv_cid_req
+              %target  = VALUE #(
+                ( ReqItemId   = lv_req_item_id
+                  ConfId      = ls_key-%param-ConfId
+                  Action      = ls_key-%param-ActionType
+                  TargetEnvId = ls_key-%param-TargetEnvId
+                  Notes       = ls_key-%param-Notes
+                  VersionNo   = 1
+                )
+              )
+            )
+          )
+        FAILED   DATA(lt_failed_req)
+        REPORTED DATA(lt_reported_req)
+        MAPPED   DATA(lt_mapped_req).
+
+      IF lt_failed_req IS NOT INITIAL.
+        CONTINUE.
+      ENDIF.
+
+      APPEND VALUE #(
+        %param-ReqId     = lv_req_id
+        %param-ReqItemId = lv_req_item_id
+        %param-ConfId    = ls_key-%param-ConfId
+        %param-ModuleId  = ls_key-%param-ModuleId
+        %param-TargetCds = ls_key-%param-TargetCds
+        %param-TargetApp = lv_target_app
+      ) TO result.
+
+    ENDLOOP.
+
+  ENDMETHOD.
 ENDCLASS.
 
 CLASS lhc_Item DEFINITION INHERITING FROM cl_abap_behavior_handler.

@@ -54,7 +54,13 @@ annotate entity ZC_SD_PRICE_CONF with
     lineItem:       [ { position: 10, label: 'Action', importance: #HIGH } ],
     identification: [ { position: 10, label: 'Action' } ]
   }
-  actiontype;
+  ActionType;
+
+  @UI: {
+    lineItem:       [ { position: 15, label: 'Status', importance: #HIGH } ],
+    identification: [ { position: 15, label: 'Status' } ]
+  }
+  LineStatus;
 
   @UI: {
     lineItem:       [ { position: 20, label: 'Environment', importance: #HIGH } ],
@@ -119,70 +125,64 @@ annotate entity ZC_SD_PRICE_CONF with
   ValidTo;
 
   @UI: {
-    lineItem:   [ { position: 80, label: 'Line Status' } ],
-    fieldGroup: [ { qualifier: 'CURRENT', position: 110, label: 'Line Status' } ]
-  }
-  linestatus;
-
-  @UI: {
     fieldGroup: [ { qualifier: 'CURRENT', position: 120, label: 'Change Note' } ]
   }
-  changenote;
+  ChangeNote;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 10, label: 'Old Environment' } ]
   }
-  oldenvid;
+  OldEnvId;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 20, label: 'Old Branch' } ]
   }
-  oldbranchid;
+  OldBranchId;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 30, label: 'Old Customer Group' } ]
   }
-  oldcustgroup;
+  OldCustGroup;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 40, label: 'Old Material Group' } ]
   }
-  oldmaterialgrp;
+  OldMaterialGrp;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 50, label: 'Old Max Discount' } ]
   }
-  oldmaxdiscount;
+  OldMaxDiscount;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 60, label: 'Old Min Order Value' } ]
   }
-  oldminorderval;
+  OldMinOrderVal;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 70, label: 'Old Approver Group' } ]
   }
-  oldapprovergrp;
+  OldApproverGrp;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 80, label: 'Old Currency' } ]
   }
-  oldcurrency;
+  OldCurrency;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 90, label: 'Old Valid From' } ]
   }
-  oldvalidfrom;
+  OldValidFrom;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 100, label: 'Old Valid To' } ]
   }
-  oldvalidto;
+  OldValidTo;
 
   @UI: {
     fieldGroup: [ { qualifier: 'OLD', position: 110, label: 'Old Version' } ]
   }
-  oldversionno;
+  OldVersionNo;
 
   @UI: {
     fieldGroup: [ { qualifier: 'ADMIN', position: 10, label: 'Request ID' } ]
@@ -192,8 +192,20 @@ annotate entity ZC_SD_PRICE_CONF with
   @UI: {
     fieldGroup: [ { qualifier: 'ADMIN', position: 20, label: 'Request Item ID' } ]
   }
-  reqitemid;
+  ReqItemId;
 
+  @UI.lineItem: [ {
+    position: 200,
+    type: #FOR_ACTION,
+    dataAction: 'approve',
+    label: 'Approve'
+  } ]
+  @UI.identification: [ {
+    position: 200,
+    type: #FOR_ACTION,
+    dataAction: 'approve',
+    label: 'Approve'
+  } ]
   @UI: {
     fieldGroup: [ { qualifier: 'ADMIN', position: 30, label: 'Item ID' } ]
   }
@@ -202,12 +214,12 @@ annotate entity ZC_SD_PRICE_CONF with
   @UI: {
     fieldGroup: [ { qualifier: 'ADMIN', position: 40, label: 'Source Item ID' } ]
   }
-  sourceitemid;
+  SourceItemId;
 
   @UI: {
     fieldGroup: [ { qualifier: 'ADMIN', position: 50, label: 'Config ID' } ]
   }
-  confid;
+  ConfId;
 
   @UI: {
     lineItem:   [ { position: 90, label: 'Version' } ],

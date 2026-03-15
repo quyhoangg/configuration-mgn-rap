@@ -6,15 +6,14 @@ define behavior for ZI_FI_LIMIT_CONF alias LimitConf
 persistent table zfilimitreq
 draft table zfi_limit_d
 lock master total etag ChangedAt
-authorization master ( instance )
+authorization master ( global )
 etag master ChangedAt
 {
   create;
   update;
   delete;
 
-  field ( readonly ) ReqId, ReqItemId;
-  field ( readonly, numbering : managed ) ItemId;
+  field ( readonly, numbering : managed ) ReqId, ReqItemId, ItemId;
 
   field ( readonly ) SourceItemId, ConfId;
 
@@ -35,7 +34,11 @@ etag master ChangedAt
   draft action Activate;
   draft action Discard;
   draft action Resume;
-  draft determine action Prepare;
+  draft determine action Prepare
+  {
+    validation validate_mandatory;
+    validation validate_business;
+  }
 
   determination set_defaults on modify { create; }
   validation validate_mandatory on save { create; update; }

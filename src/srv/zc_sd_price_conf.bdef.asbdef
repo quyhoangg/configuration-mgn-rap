@@ -8,6 +8,8 @@ define behavior for ZC_SD_PRICE_CONF alias PriceConf
   use update;
   use delete;
 
+  use action approve;
+
   use action Edit;
   use action Activate;
   use action Discard;

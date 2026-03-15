@@ -1,4 +1,4 @@
 @EndUserText.label: 'Service for FI Limit Config'
-define service ZUI_FI_LIMIT_CONF {
+define service ZSD_FI_LIMIT_CONF {
   expose ZC_FI_LIMIT_CONF;
 }

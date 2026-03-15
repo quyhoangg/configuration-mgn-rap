@@ -3,12 +3,12 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <SRVD>
-    <NAME>ZUI_FI_LIMIT_CONF</NAME>
+    <NAME>ZSD_FI_LIMIT_CONF</NAME>
     <TYPE>SRVD/SRV</TYPE>
     <DESCRIPTION>Service for FI Limit Config</DESCRIPTION>
     <LANGUAGE>EN</LANGUAGE>
     <MASTER_LANGUAGE>EN</MASTER_LANGUAGE>
-    <SOURCE_URI>./zui_fi_limit_conf/source/main</SOURCE_URI>
+    <SOURCE_URI>./zsd_fi_limit_conf/source/main</SOURCE_URI>
     <SOURCE_TYPE>ABAP_SOURCE</SOURCE_TYPE>
     <SOURCE_ORIGIN_DESCRIPTION>ABAP Development Tools</SOURCE_ORIGIN_DESCRIPTION>
     <SRVD_SOURCE_TYPE>S</SRVD_SOURCE_TYPE>
