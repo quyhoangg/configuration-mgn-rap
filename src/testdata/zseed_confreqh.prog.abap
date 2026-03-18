@@ -1,113 +1,80 @@
 *&---------------------------------------------------------------------*
-*& Report ZSEED_CONFREQH
+*& Report ZSEED_MANAGER_TEST
 *&---------------------------------------------------------------------*
-REPORT zseed_confreqh.
+REPORT zseed_manager_test.
 
-DATA: lt_header TYPE STANDARD TABLE OF zconfreqh,
-      lv_ts     TYPE timestampl.
+DATA: lt_header  TYPE STANDARD TABLE OF zconfreqh,
+      lt_items   TYPE STANDARD TABLE OF zconfreqi,
+      lv_ts      TYPE timestampl.
 
 GET TIME STAMP FIELD lv_ts.
 
-" Skip if data already exists
-SELECT SINGLE @abap_true FROM zconfreqh INTO @DATA(lv_exists).
-IF sy-subrc = 0.
-  WRITE: / 'ZCONFREQH already has data. Skip seeding.'.
-  RETURN.
+" 1. LẤY DANH SÁCH CONF_ID ĐANG CÓ TRONG CATALOG CỦA BẠN
+SELECT conf_id FROM zconfcatalog INTO TABLE @DATA(lt_cat_ids).
+
+IF lt_cat_ids IS INITIAL.
+   WRITE: / 'Lỗi: Bảng Catalog đang trống, vui lòng kiểm tra lại!'.
+   RETURN.
 ENDIF.
 
+" 2. DỌN DẸP DỮ LIỆU CŨ Ở BẢNG REQ
+DELETE FROM zconfreqh.
+DELETE FROM zconfreqi.
+DELETE FROM zauditlog.
+
 TRY.
-    " 1) DRAFT request
+    " --- CASE 1: TRẠNG THÁI 'S' (SUBMITTED) ĐỂ TEST APPROVE ---
+    DATA(lv_req_s) = cl_system_uuid=>create_uuid_x16_static( ).
     APPEND VALUE zconfreqh(
-      client      = sy-mandt
-      req_id      = cl_system_uuid=>create_uuid_x16_static( )
-      env_id      = 'DEV'
-      module_id   = 'FI'
-      req_title   = 'Update Expense Limit for Travel'
-      description = 'Change auto-approval limit from 5000 to 8000'
-      status      = 'DRAFT'
-      reason      = 'Business policy update'
-      created_by  = sy-uname
-      created_at  = lv_ts
-      changed_by  = sy-uname
-      changed_at  = lv_ts
-    ) TO lt_header.
-
-    " 2) SUBMITTED request
-    APPEND VALUE zconfreqh(
-      client      = sy-mandt
-      req_id      = cl_system_uuid=>create_uuid_x16_static( )
-      env_id      = 'DEV'
-      module_id   = 'SD'
-      req_title   = 'Add Discount Rule for VIP'
-      description = 'New pricing rule for VIP customers'
-      status      = 'SUBMITTED'
-      reason      = 'New customer segment'
-      created_by  = sy-uname
-      created_at  = lv_ts
-      changed_by  = sy-uname
-      changed_at  = lv_ts
-    ) TO lt_header.
-
-    " 3) APPROVED request
-    APPEND VALUE zconfreqh(
-      client      = sy-mandt
-      req_id      = cl_system_uuid=>create_uuid_x16_static( )
-      env_id      = 'QAS'
+      req_id      = lv_req_s
+      req_title   = 'Maintain Warehouse Route'
       module_id   = 'MM'
-      req_title   = 'Add Warehouse Route HCM-HN'
-      description = 'New route from Ho Chi Minh to Ha Noi'
-      status      = 'APPROVED'
-      reason      = 'Logistics expansion'
-      created_by  = sy-uname
-      created_at  = lv_ts
-      changed_by  = sy-uname
-      changed_at  = lv_ts
-      approved_by = sy-uname
-      approved_at = lv_ts
-    ) TO lt_header.
-
-    " 4) REJECTED request
-    APPEND VALUE zconfreqh(
-      client      = sy-mandt
-      req_id      = cl_system_uuid=>create_uuid_x16_static( )
       env_id      = 'DEV'
-      module_id   = 'FI'
-      req_title   = 'Remove GL Account 600100'
-      description = 'Request to deactivate unused GL account'
-      status      = 'REJECTED'
-      reason      = 'Account still in use by 3 cost centers'
+      status      = 'S'
       created_by  = sy-uname
       created_at  = lv_ts
-      changed_by  = sy-uname
-      changed_at  = lv_ts
-      rejected_by = 'MANAGER01'
-      rejected_at = lv_ts
     ) TO lt_header.
 
-    " 5) ACTIVE request
+    " Lấy UUID đầu tiên từ Catalog của bạn để gán vào Item
+    APPEND VALUE zconfreqi(
+      req_item_id   = cl_system_uuid=>create_uuid_x16_static( )
+      req_id        = lv_req_s
+      conf_id       = lt_cat_ids[ 1 ]-conf_id " Dùng UUID thực tế từ Catalog
+      action        = 'INSERT'
+      target_env_id = 'PRD'
+    ) TO lt_items.
+
+    " --- CASE 2: TRẠNG THÁI 'A' (APPROVED) ĐỂ HIỆN MÀU XANH ---
+    DATA(lv_req_a) = cl_system_uuid=>create_uuid_x16_static( ).
     APPEND VALUE zconfreqh(
-      client      = sy-mandt
-      req_id      = cl_system_uuid=>create_uuid_x16_static( )
-      env_id      = 'PRD'
-      module_id   = 'SD'
-      req_title   = 'Update Min Order Value'
-      description = 'Increase minimum order value to 1000 USD'
-      status      = 'ACTIVE'
-      reason      = 'Applied to production'
+      req_id      = lv_req_a
+      req_title   = 'Update Expense Limit'
+      module_id   = 'FI'
+      env_id      = 'QAS'
+      status      = 'A'
       created_by  = sy-uname
       created_at  = lv_ts
-      changed_by  = sy-uname
-      changed_at  = lv_ts
-      approved_by = sy-uname
+      approved_by = 'MANAGER'
       approved_at = lv_ts
     ) TO lt_header.
 
-  CATCH cx_uuid_error INTO DATA(lx_uuid).
-    WRITE: / |UUID generation failed: { lx_uuid->get_text( ) }|.
-    RETURN.
+    " Lấy UUID thứ ba từ Catalog của bạn
+    APPEND VALUE zconfreqi(
+      req_item_id = cl_system_uuid=>create_uuid_x16_static( )
+      req_id      = lv_req_a
+      conf_id     = VALUE #( lt_cat_ids[ 3 ]-conf_id OPTIONAL )
+      action      = 'UPDATE'
+      target_env_id = 'PRD'
+    ) TO lt_items.
+
+  CATCH cx_uuid_error.
+    WRITE 'Lỗi UUID'. RETURN.
 ENDTRY.
 
-INSERT zconfreqh FROM TABLE @lt_header.
+" 3. DÙNG MODIFY THAY VÌ INSERT ĐỂ TRÁNH DUMP (DUPLICATE KEY)
+MODIFY zconfreqh FROM TABLE @lt_header.
+MODIFY zconfreqi FROM TABLE @lt_items.
 COMMIT WORK.
 
-WRITE: / |Seed done. Inserted { sy-dbcnt } row(s) into ZCONFREQH.|.
+WRITE: / '--- SEEDING SUCCESSFUL (Khớp với Catalog) ---'.
+WRITE: / |Đã tạo { lines( lt_header ) } Header và { lines( lt_items ) } Item dựa trên dữ liệu Catalog thật.|.

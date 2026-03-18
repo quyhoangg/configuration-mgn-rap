@@ -2,15 +2,9 @@
 "BASEINFO":
 {
 "FROM":
-[
-"ZI_CONF_CATALOG",
-"ZCONFREQH"
-],
+[],
 "ASSOCIATED":
-[
-"ZI_CONF_REQ_I",
-"ZI_ENV_DEF"
-],
+[],
 "BASE":
 [],
 "ANNO_REF":

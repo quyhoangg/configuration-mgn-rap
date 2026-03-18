@@ -3,38 +3,36 @@ strict ( 2 );
 with draft;
 
 define behavior for ZI_MM_SAFE_STOCK alias SafeStock
-persistent table zmmsafestock_req
-draft table zmmsafestock_d
-lock master
-total etag ChangedAt
-authorization master ( instance )
-etag master ChangedAt
+  persistent table zmmsafestock_req
+  draft table zmmsafestock_d
+  lock master
+  total etag ChangedAt
+  authorization master ( instance )
+  etag master ChangedAt
 {
+  field ( readonly, numbering : managed ) ReqId, ReqItemId, ItemId;
 
-  field ( readonly ) ReqId, ReqItemId;
-field ( readonly, numbering : managed ) ItemId;
+  field ( readonly )
+    OldEnvId, OldPlantId, OldMatGroup, OldMinQty, OldVersionNo;
 
-field ( readonly )
-  OldEnvId,
-  OldPlantId,
-  OldMatGroup,
-  OldMinQty,
-  OldVersionNo;
+  field ( readonly )
+    CreatedBy, CreatedAt, ChangedBy, ChangedAt, VersionNo;
 
-field ( readonly )
-  CreatedBy, CreatedAt, ChangedBy, ChangedAt, VersionNo;
+  field ( mandatory ) EnvId, PlantId, MatGroup, MinQty;
 
-field ( mandatory ) EnvId, PlantId, MatGroup, MinQty;
   create;
   update;
   delete;
 
+  action ( features : instance ) approve result [1] $self;
+
+  determination set_defaults   on modify { field SourceItemId, ActionType; }
+  determination setAdminFields on modify { field EnvId, PlantId, MatGroup, MinQty, ChangeNote; }
 
   draft action Edit;
   draft action Activate;
   draft action Discard;
   draft action Resume;
-
 
   draft determine action Prepare {
     validation validateMandatory;
@@ -45,32 +43,26 @@ field ( mandatory ) EnvId, PlantId, MatGroup, MinQty;
   mapping for zmmsafestock_req
   {
     ReqId        = req_id;
-  ReqItemId    = req_item_id;
-  ItemId       = item_id;
-
-  SourceItemId = source_item_id;
-  ConfId       = conf_id;
-  ActionType   = action_type;
-
-  EnvId        = env_id;
-  PlantId      = plant_id;
-  MatGroup     = mat_group;
-  MinQty       = min_qty;
-
-  VersionNo    = version_no;
-
-  OldEnvId     = old_env_id;
-  OldPlantId   = old_plant_id;
-  OldMatGroup  = old_mat_group;
-  OldMinQty    = old_min_qty;
-  OldVersionNo = old_version_no;
-
-  LineStatus   = line_status;
-  ChangeNote   = change_note;
-
-  CreatedBy    = created_by;
-  CreatedAt    = created_at;
-  ChangedBy    = changed_by;
-  ChangedAt    = changed_at;
+    ReqItemId    = req_item_id;
+    ItemId       = item_id;
+    SourceItemId = source_item_id;
+    ConfId       = conf_id;
+    ActionType   = action_type;
+    EnvId        = env_id;
+    PlantId      = plant_id;
+    MatGroup     = mat_group;
+    MinQty       = min_qty;
+    VersionNo    = version_no;
+    OldEnvId     = old_env_id;
+    OldPlantId   = old_plant_id;
+    OldMatGroup  = old_mat_group;
+    OldMinQty    = old_min_qty;
+    OldVersionNo = old_version_no;
+    LineStatus   = line_status;
+    ChangeNote   = change_note;
+    CreatedBy    = created_by;
+    CreatedAt    = created_at;
+    ChangedBy    = changed_by;
+    ChangedAt    = changed_at;
   }
 }

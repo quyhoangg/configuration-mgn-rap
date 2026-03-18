@@ -8,6 +8,7 @@ define behavior for ZC_MM_SAFE_STOCK alias SafeStock
   use update;
   use delete;
 
+  use action approve;
   use action Edit;
   use action Activate;
   use action Discard;

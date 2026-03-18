@@ -16,9 +16,6 @@ authorization master ( instance )
 
   association _Items { create; with draft; }
 
-  // UUID generated
-  field ( numbering : managed, readonly ) ReqId;
-
   // System/admin fields readonly
   field ( readonly )
   CreatedBy, CreatedAt,
@@ -28,6 +25,8 @@ authorization master ( instance )
 
   // Status chỉ đổi bằng action
   field ( readonly ) Status;
+  field ( readonly ) EnvId;
+  field ( readonly ) ReqId;
 
   draft action Edit;
   draft action Activate;
@@ -40,19 +39,21 @@ authorization master ( instance )
 
   action ( features : instance ) submit result [1] $self;
   action ( features : instance ) approve result [1] $self;
-  action ( features : instance ) reject result [1] $self;
+  // Thay vì khai báo action reject result [1] $self;
+  action ( features : instance ) reject parameter ZABSTR_REJECT_REASON result [1] $self;
   action ( features : instance ) promote result [1] $self;
 
-  static action createFromCatalog
-    parameter ZC_REQ_FROM_CATALOG_P
+  static action createRequest
+    parameter ZC_REQ_CREATE_P
     result [1] ZC_REQ_NAV_CTX;
 
-  validation validate_before_save on save { create; update; }
-  // determination set_default_and_admin_fields on modify { create; update; }
+  validation validate_before_save on save { create; }
+  determination set_default_and_admin_fields on modify { create;  }
 
   mapping for zconfreqh
   {
     ReqId = req_id;
+    ConfId = conf_id;
     EnvId = env_id;
     ModuleId = module_id;
     ReqTitle = req_title;

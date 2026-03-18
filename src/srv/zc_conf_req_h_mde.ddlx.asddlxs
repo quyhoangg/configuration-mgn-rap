@@ -4,110 +4,91 @@
   headerInfo: {
     typeName: 'Change Request',
     typeNamePlural: 'Change Requests',
-    title: {
-      type: #STANDARD,
-      value: 'ReqTitle'
+    title: { 
+        type: #STANDARD, 
+        label: 'Request:', 
+        value: 'ReqTitle'  -- Đảm bảo tên field này khớp 100% với CDS View
     },
-    description: {
-      value: 'Status'
+    description: { 
+        label: 'Status:',
+        value: 'Status' 
     }
   }
 }
 annotate entity ZC_CONF_REQ_H with
 {
   @UI.facet: [
-   {
-     id: 'RequestInfo',
-     type: #FIELDGROUP_REFERENCE,
-     label: 'Request Information',
-     targetQualifier: 'REQ',
-     position: 10
-   },
-   {
-     id: 'RequestItems',
-     type: #LINEITEM_REFERENCE,
-     label: 'Request Items',
-     targetElement: '_Items',
-     position: 20
-   },
-   {
-     id: 'AuditInfo',
-     type: #FIELDGROUP_REFERENCE,
-     label: 'Audit Trail',
-     targetQualifier: 'AUDIT',
-     position: 30
-   }
+    {
+      id: 'RequestInfo',
+      type: #FIELDGROUP_REFERENCE,
+      label: 'Request Information',
+      targetQualifier: 'REQ',
+      position: 10
+    }
   ]
+
+  @UI.hidden: true
+  ConfId;
+  @UI.hidden: true
+  statuscriticality; -- Sửa lại thành chữ Hoa (CamelCase)
+
+  @UI: {
+   identification: [ { position: 10, label: 'Configuration Name' } ],
+   fieldGroup:     [ { qualifier: 'CTX', position: 10, label: 'Configuration Name' } ]
+  }
+  ConfName;
+
+  @UI: {
+    identification: [ { position: 20, label: 'Module' } ],
+    fieldGroup:     [ { qualifier: 'CTX', position: 20, label: 'Module' } ]
+  }
+  ModuleId;
 
   @UI: {
     lineItem:       [ { position: 10, label: 'Request Title' } ],
     selectionField: [ { position: 10 } ],
-    identification: [ { position: 10, label: 'Request Title' } ],
+    identification: [ 
+      { position: 10, label: 'Request Title' },
+      { type: #FOR_ACTION, dataAction: 'approve', label: 'Approve' }, // Nút trên Header trang chi tiết
+      { type: #FOR_ACTION, dataAction: 'reject', label: 'Reject' }
+    ],
     fieldGroup:     [ { qualifier: 'REQ', position: 10, label: 'Request Title' } ]
   }
   ReqTitle;
 
   @UI: {
-    lineItem:       [ { position: 20, label: 'Module' } ],
-    selectionField: [ { position: 20 } ],
-    identification: [ { position: 20, label: 'Module' } ],
-    fieldGroup:     [ { qualifier: 'REQ', position: 20, label: 'Module' } ]
-  }
-  ModuleId;
-
-  @UI: {
-    lineItem:       [ { position: 30, label: 'Environment' } ],
-    selectionField: [ { position: 30 } ],
-    identification: [ { position: 30, label: 'Environment' } ],
-    fieldGroup:     [ { qualifier: 'REQ', position: 30, label: 'Environment' } ]
-  }
+     identification: [ { position: 30, label: 'Environment' } ],
+     fieldGroup:     [ { qualifier: 'CTX', position: 30, label: 'Environment' } ],
+     lineItem:       [ { position: 30, label: 'Environment' } ],
+     selectionField: [ { position: 30 } ]
+   }
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZC_ENV_DEF', element: 'EnvId' } }]
   EnvId;
 
   @UI: {
-    lineItem:       [ { position: 40, label: 'Status' } ],
-    selectionField: [ { position: 40 } ],
-    identification: [ { position: 40, label: 'Status' } ]
+    lineItem:       [ 
+      { position: 40, label: 'Status', criticality: 'StatusCriticality' }, -- Thêm ở đây
+      { type: #FOR_ACTION, dataAction: 'approve', label: 'Approve' },
+      { type: #FOR_ACTION, dataAction: 'reject', label: 'Reject' }
+    ],
+    identification: [ { position: 40, label: 'Status', criticality: 'StatusCriticality' } ], -- Thêm ở đây
+    selectionField: [ { position: 40 } ]
   }
   Status;
 
   @UI: {
     lineItem:       [ { position: 50, label: 'Reason' } ],
-    identification: [ { position: 50, label: 'Reason' } ],
-    fieldGroup:     [ { qualifier: 'REQ', position: 40, label: 'Reason' } ]
+    identification: [ { position: 20, label: 'Reason' } ],
+    fieldGroup:     [ { qualifier: 'REQ', position: 20, label: 'Reason' } ]
   }
   Reason;
 
   @UI: {
-    identification: [ { position: 60, label: 'Description' } ],
-    fieldGroup:     [ { qualifier: 'REQ', position: 50, label: 'Description' } ]
+    identification: [ { position: 30, label: 'Description' } ],
+    fieldGroup:     [ { qualifier: 'REQ', position: 30, label: 'Description' } ]
   }
   Description;
 
   @UI.lineItem: [ { position: 60, label: 'Created At' } ]
   CreatedAt;
-
-  @UI.fieldGroup: [ { qualifier: 'AUDIT', position: 10, label: 'Request ID' } ]
-  ReqId;
-
-  @UI.fieldGroup: [ { qualifier: 'AUDIT', position: 20, label: 'Created By' } ]
-  CreatedBy;
-
-  @UI.fieldGroup: [ { qualifier: 'AUDIT', position: 40, label: 'Changed By' } ]
-  ChangedBy;
-
-  @UI.fieldGroup: [ { qualifier: 'AUDIT', position: 50, label: 'Changed At' } ]
-  ChangedAt;
-
-  @UI.fieldGroup: [ { qualifier: 'AUDIT', position: 60, label: 'Approved By' } ]
-  ApprovedBy;
-
-  @UI.fieldGroup: [ { qualifier: 'AUDIT', position: 70, label: 'Approved At' } ]
-  ApprovedAt;
-
-  @UI.fieldGroup: [ { qualifier: 'AUDIT', position: 80, label: 'Rejected By' } ]
-  RejectedBy;
-
-  @UI.fieldGroup: [ { qualifier: 'AUDIT', position: 90, label: 'Rejected At' } ]
-  RejectedAt;
 }

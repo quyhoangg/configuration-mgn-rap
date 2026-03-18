@@ -1,7 +1,6 @@
-@EndUserText.label: 'Create Request From Catalog Param'
-define abstract entity ZC_REQ_FROM_CATALOG_P
+define abstract entity ZC_REQ_CREATE_P
 {
-  ConfId      : sysuuid_x16;
+  ConfId      : abap.char(36);  
   ModuleId    : zde_module_id;
   ConfName    : abap.char(100);
   TargetCds   : abap.char(30);
