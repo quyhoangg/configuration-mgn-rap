@@ -4,11 +4,8 @@ use draft;
 
 define behavior for ZC_MM_SAFE_STOCK alias SafeStock
 {
-  use create;
   use update;
-  use delete;
 
-  use action approve;
   use action Edit;
   use action Activate;
   use action Discard;

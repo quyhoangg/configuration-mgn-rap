@@ -13,6 +13,7 @@ define view entity ZC_CONF_REQ_I
       TargetEnvId,
       Notes,
       VersionNo,
+      ConfName,
 
       CreatedBy,
       CreatedAt,

@@ -27,5 +27,6 @@ define root view entity ZC_CONF_REQ_H
 
       _Items : redirected to composition child ZC_CONF_REQ_I,
       _Env,
-      ConfName
+      ConfName,
+      TargetCds
 }

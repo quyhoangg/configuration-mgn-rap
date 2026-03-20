@@ -3,6 +3,7 @@
 {
 "FROM":
 [
+"ZI_CONF_CATALOG",
 "ZCONFREQI"
 ],
 "ASSOCIATED":

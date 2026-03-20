@@ -2,177 +2,102 @@
 
 @UI: {
   headerInfo: {
-    typeName: 'MM Safe Stock Request Line',
-    typeNamePlural: 'MM Safe Stock Request Lines',
-    title: {
-      type: #STANDARD,
-      label: 'Plant',
-      value: 'PlantId'
-    },
-    description: {
-      value: 'ActionType'
-    }
+    typeName:       'MM Safe Stock Request',
+    typeNamePlural: 'MM Safe Stock Requests',
+    title:       { type: #STANDARD, label: 'Plant',         value: 'PlantId' },
+    description: { value: 'MatGroup' }
   }
 }
 annotate entity ZC_MM_SAFE_STOCK with
 {
   @UI.facet: [
     {
-      id: 'GeneralInfo',
-      purpose: #STANDARD,
-      type: #IDENTIFICATION_REFERENCE,
-      label: 'General Information',
-      position: 10
+      id: 'CurrentValues', purpose: #STANDARD,
+      type: #FIELDGROUP_REFERENCE, label: 'Current Values',
+      targetQualifier: 'CURRENT', position: 10
     },
     {
-      id: 'CurrentValues',
-      purpose: #STANDARD,
-      type: #FIELDGROUP_REFERENCE,
-      label: 'Current Values',
-      targetQualifier: 'CURRENT',
-      position: 20
+      id: 'OldValues', purpose: #STANDARD,
+      type: #FIELDGROUP_REFERENCE, label: 'Old Values',
+      targetQualifier: 'OLD', position: 20
     },
     {
-      id: 'OldValues',
-      purpose: #STANDARD,
-      type: #FIELDGROUP_REFERENCE,
-      label: 'Old Values',
-      targetQualifier: 'OLD',
-      position: 30
-    },
-    {
-      id: 'AdminInfo',
-      purpose: #STANDARD,
-      type: #FIELDGROUP_REFERENCE,
-      label: 'Administration',
-      targetQualifier: 'ADMIN',
-      position: 40
+      id: 'AdminInfo', purpose: #STANDARD,
+      type: #FIELDGROUP_REFERENCE, label: 'Administration',
+      targetQualifier: 'ADMIN', position: 30
     }
   ]
-
-  @UI: {
-    lineItem:       [ { position: 10, label: 'Action', importance: #HIGH } ],
-    identification: [ { position: 10, label: 'Action' } ]
+  
+    @UI: {
+    selectionField: [ { position: 5 } ],
+    lineItem:       [ { position: 5, label: 'Request ID' } ]
   }
-  actiontype;
+  ReqId;
 
   @UI: {
-    lineItem:       [ { position: 20, label: 'Environment', importance: #HIGH } ],
-    identification: [ { position: 20, label: 'Environment' } ],
+    lineItem:       [ { position: 10, label: 'Environment',    importance: #HIGH } ],
     selectionField: [ { position: 10 } ],
     fieldGroup:     [ { qualifier: 'CURRENT', position: 10, label: 'Environment' } ]
   }
   EnvId;
 
   @UI: {
-    lineItem:       [ { position: 30, label: 'Plant', importance: #HIGH } ],
-    identification: [ { position: 30, label: 'Plant' } ],
+    lineItem:       [ { position: 20, label: 'Plant',          importance: #HIGH } ],
     selectionField: [ { position: 20 } ],
     fieldGroup:     [ { qualifier: 'CURRENT', position: 20, label: 'Plant' } ]
   }
   PlantId;
 
   @UI: {
-    lineItem:       [ { position: 40, label: 'Material Group', importance: #HIGH } ],
-    identification: [ { position: 40, label: 'Material Group' } ],
+    lineItem:       [ { position: 30, label: 'Material Group', importance: #HIGH } ],
     selectionField: [ { position: 30 } ],
     fieldGroup:     [ { qualifier: 'CURRENT', position: 30, label: 'Material Group' } ]
   }
   MatGroup;
 
   @UI: {
-    lineItem:       [ { position: 50, label: 'Minimum Quantity', importance: #HIGH } ],
-    identification: [ { position: 50, label: 'Minimum Quantity' } ],
+    lineItem:       [ { position: 40, label: 'Min Quantity',   importance: #HIGH } ],
     selectionField: [ { position: 40 } ],
-    fieldGroup:     [ { qualifier: 'CURRENT', position: 40, label: 'Minimum Quantity' } ]
+    fieldGroup:     [ { qualifier: 'CURRENT', position: 40, label: 'Min Quantity' } ]
   }
   MinQty;
 
-  @UI: {
-    lineItem:   [ { position: 60, label: 'Line Status' } ],
-    fieldGroup: [ { qualifier: 'CURRENT', position: 50, label: 'Line Status' } ]
-  }
-  linestatus;
+  @UI.fieldGroup: [ { qualifier: 'OLD', position: 10, label: 'Old Environment' } ]
+  OldEnvId;
+
+  @UI.fieldGroup: [ { qualifier: 'OLD', position: 20, label: 'Old Plant' } ]
+  OldPlantId;
+
+  @UI.fieldGroup: [ { qualifier: 'OLD', position: 30, label: 'Old Material Group' } ]
+  OldMatGroup;
+
+  @UI.fieldGroup: [ { qualifier: 'OLD', position: 40, label: 'Old Min Quantity' } ]
+  OldMinQty;
 
   @UI: {
-    fieldGroup: [ { qualifier: 'CURRENT', position: 60, label: 'Change Note' } ]
+    lineItem:   [ { position: 50, label: 'Status' } ],
+    fieldGroup: [ { qualifier: 'ADMIN', position: 10, label: 'Status' } ]
   }
-  changenote;
+  LineStatus;
 
-  @UI: {
-    fieldGroup: [ { qualifier: 'OLD', position: 10, label: 'Old Environment' } ]
-  }
-  oldenvid;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'OLD', position: 20, label: 'Old Plant' } ]
-  }
-  oldplantid;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'OLD', position: 30, label: 'Old Material Group' } ]
-  }
-  oldmatgroup;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'OLD', position: 40, label: 'Old Minimum Quantity' } ]
-  }
-  oldminqty;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'OLD', position: 50, label: 'Old Version' } ]
-  }
-  oldversionno;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'ADMIN', position: 10, label: 'Request ID' } ]
-  }
-  ReqId;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'ADMIN', position: 20, label: 'Request Item ID' } ]
-  }
-  reqitemid;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'ADMIN', position: 30, label: 'Item ID' } ]
-  }
-  ItemId;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'ADMIN', position: 40, label: 'Source Item ID' } ]
-  }
-  sourceitemid;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'ADMIN', position: 50, label: 'Config ID' } ]
-  }
-  confid;
-
-  @UI: {
-    fieldGroup: [ { qualifier: 'ADMIN', position: 60, label: 'Version' } ]
-  }
+  @UI.fieldGroup: [ { qualifier: 'ADMIN', position: 20, label: 'Version' } ]
   VersionNo;
 
-  @UI: {
-    fieldGroup: [ { qualifier: 'ADMIN', position: 70, label: 'Created By' } ]
-  }
+  @UI.fieldGroup: [ { qualifier: 'ADMIN', position: 30, label: 'Created By' } ]
   CreatedBy;
 
   @UI: {
-    lineItem:   [ { position: 70, label: 'Created At' } ],
-    fieldGroup: [ { qualifier: 'ADMIN', position: 80, label: 'Created At' } ]
+    lineItem:   [ { position: 60, label: 'Created At' } ],
+    fieldGroup: [ { qualifier: 'ADMIN', position: 40, label: 'Created At' } ]
   }
   CreatedAt;
 
-  @UI: {
-    fieldGroup: [ { qualifier: 'ADMIN', position: 90, label: 'Changed By' } ]
-  }
+  @UI.fieldGroup: [ { qualifier: 'ADMIN', position: 50, label: 'Changed By' } ]
   ChangedBy;
 
   @UI: {
-    lineItem:   [ { position: 80, label: 'Changed At' } ],
-    fieldGroup: [ { qualifier: 'ADMIN', position: 100, label: 'Changed At' } ]
+    lineItem:   [ { position: 70, label: 'Changed At' } ],
+    fieldGroup: [ { qualifier: 'ADMIN', position: 60, label: 'Changed At' } ]
   }
   ChangedAt;
 }

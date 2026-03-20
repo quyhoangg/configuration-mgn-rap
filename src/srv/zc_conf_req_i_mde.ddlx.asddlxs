@@ -17,10 +17,11 @@ annotate view ZC_CONF_REQ_I with
     }
   ]
 
-  @UI.lineItem: [{ position: 10, importance: #HIGH, label: 'Config' }]
-  @UI.identification: [{ position: 10, label: 'Config' }]
-  @Consumption.valueHelpDefinition: [{ entity: { name: 'ZC_CONF_CATALOG', element: 'ConfId' } }]
+  @UI.hidden: true
   ConfId;
+
+  @UI.lineItem: [ { position: 10, label: 'Config Name' } ]
+  ConfName;
 
   @UI.lineItem: [{ position: 20, importance: #HIGH, label: 'Action' }]
   @UI.identification: [{ position: 20, label: 'Action' }]

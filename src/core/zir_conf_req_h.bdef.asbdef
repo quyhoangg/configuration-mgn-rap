@@ -1,115 +1,116 @@
 managed implementation in class zbp_ir_conf_req_h unique;
-strict ( 2 );
-with draft;
+  strict ( 2 );
+  with draft;
 
-define behavior for ZIR_CONF_REQ_H alias Req
-persistent table zconfreqh
-draft table zconfreqh_d
-lock master
-total etag ChangedAt
-etag master ChangedAt
-authorization master ( instance )
-{
-  create;
-  update ( features : instance );
-  delete;
-
-  association _Items { create; with draft; }
-
-  // System/admin fields readonly
-  field ( readonly )
-  CreatedBy, CreatedAt,
-  ChangedBy, ChangedAt,
-  ApprovedBy, ApprovedAt,
-  RejectedBy, RejectedAt;
-
-  // Status chỉ đổi bằng action
-  field ( readonly ) Status;
-  field ( readonly ) EnvId;
-  field ( readonly ) ReqId;
-
-  draft action Edit;
-  draft action Activate;
-  draft action Discard;
-  draft action Resume;
-  draft determine action Prepare
+  define behavior for ZIR_CONF_REQ_H alias Req
+  persistent table zconfreqh
+  draft table zconfreqh_d
+  lock master
+  total etag ChangedAt
+  etag master ChangedAt
+  authorization master ( instance )
   {
-    validation validate_before_save;
+    create;
+    update ( features : instance );
+    delete;
+
+    association _Items { create; with draft; }
+
+    // System/admin fields readonly
+    field ( readonly )
+    CreatedBy, CreatedAt,
+    ChangedBy, ChangedAt,
+    ApprovedBy, ApprovedAt,
+    RejectedBy, RejectedAt;
+
+    // Status chỉ đổi bằng action
+    field ( readonly ) Status;
+    field ( readonly ) EnvId;
+
+    // ReqId: RAP tự generate UUID (managed numbering)
+    field ( numbering : managed, readonly ) ReqId;
+
+    draft action Edit;
+    draft action Activate;
+    draft action Discard;
+    draft action Resume;
+    draft determine action Prepare
+    {
+      validation validate_before_save;
+    }
+
+    action ( features : instance ) submit result [1] $self;
+     action ( features : instance ) rollback result [1] $self;
+    action ( features : instance ) approve result [1] $self;
+    action ( features : instance ) reject parameter ZABSTR_REJECT_REASON result [1] $self;
+    action ( features : instance ) promote result [1] $self;
+
+    static action createRequest
+      parameter ZC_REQ_CREATE_P
+      result [1] ZC_REQ_NAV_CTX;
+
+    validation validate_before_save on save { create; }
+    determination set_default_and_admin_fields on modify { create; }
+
+    mapping for zconfreqh
+    {
+      ReqId = req_id;
+      ConfId = conf_id;
+      EnvId = env_id;
+      ModuleId = module_id;
+      ReqTitle = req_title;
+      Description = description;
+      Status = status;
+      Reason = reason;
+
+      CreatedBy = created_by;
+      CreatedAt = created_at;
+      ChangedBy = changed_by;
+      ChangedAt = changed_at;
+
+      ApprovedBy = approved_by;
+      ApprovedAt = approved_at;
+      RejectedBy = rejected_by;
+      RejectedAt = rejected_at;
+    }
   }
 
-  action ( features : instance ) submit result [1] $self;
-  action ( features : instance ) approve result [1] $self;
-  // Thay vì khai báo action reject result [1] $self;
-  action ( features : instance ) reject parameter ZABSTR_REJECT_REASON result [1] $self;
-  action ( features : instance ) promote result [1] $self;
-
-  static action createRequest
-    parameter ZC_REQ_CREATE_P
-    result [1] ZC_REQ_NAV_CTX;
-
-  validation validate_before_save on save { create; }
-  determination set_default_and_admin_fields on modify { create;  }
-
-  mapping for zconfreqh
+  define behavior for ZI_CONF_REQ_I alias Item
+  persistent table zconfreqi
+  draft table zconfreqi_d
+  lock dependent by _Header
+  authorization dependent by _Header
+  etag master ChangedAt
   {
-    ReqId = req_id;
-    ConfId = conf_id;
-    EnvId = env_id;
-    ModuleId = module_id;
-    ReqTitle = req_title;
-    Description = description;
-    Status = status;
-    Reason = reason;
+    update;
+    delete;
 
-    CreatedBy = created_by;
-    CreatedAt = created_at;
-    ChangedBy = changed_by;
-    ChangedAt = changed_at;
+    // UUID generated
+    field ( numbering : managed, readonly ) ReqItemId;
 
-    ApprovedBy = approved_by;
-    ApprovedAt = approved_at;
-    RejectedBy = rejected_by;
-    RejectedAt = rejected_at;
+    // FK theo composition
+    field ( readonly : update ) ReqId;
+
+    field ( readonly )
+    CreatedBy, CreatedAt,
+    ChangedBy, ChangedAt;
+
+    association _Header;
+
+    validation validate_item on save { create; update; }
+
+    mapping for zconfreqi
+    {
+      ReqItemId = req_item_id;
+      ReqId = req_id;
+      ConfId = conf_id;
+      Action = action;
+      TargetEnvId = target_env_id;
+      Notes = notes;
+      VersionNo = version_no;
+      CreatedBy = created_by;
+      CreatedAt = created_at;
+      ChangedBy = changed_by;
+      ChangedAt = changed_at;
+    }
   }
-}
-
-define behavior for ZI_CONF_REQ_I alias Item
-persistent table zconfreqi
-draft table zconfreqi_d
-lock dependent by _Header
-authorization dependent by _Header
-etag master ChangedAt
-{
-  update;
-  delete;
-
-  // UUID generated
-  field ( numbering : managed, readonly ) ReqItemId;
-
-  // FK theo composition
-  field ( readonly : update ) ReqId;
-
-  field ( readonly )
-  CreatedBy, CreatedAt,
-  ChangedBy, ChangedAt;
-
-  association _Header;
-
-  validation validate_item on save { create; update; }
-
-  mapping for zconfreqi
-  {
-    ReqItemId = req_item_id;
-    ReqId = req_id;
-    ConfId = conf_id;
-    Action = action;
-    TargetEnvId = target_env_id;
-    Notes = notes;
-    VersionNo = version_no;
-
-    CreatedBy = created_by;
-    CreatedAt = created_at;
-    ChangedBy = changed_by;
-    ChangedAt = changed_at;
-  }
-}

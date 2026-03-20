@@ -27,6 +27,7 @@ define root view entity ZIR_CONF_REQ_H
       reason            as Reason,
 
       _Catalog.ConfName as ConfName,
+      _Catalog.TargetCds as TargetCds,
 
       /* Admin */
       @Semantics.user.createdBy: true

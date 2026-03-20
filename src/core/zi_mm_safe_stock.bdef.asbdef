@@ -11,23 +11,13 @@ define behavior for ZI_MM_SAFE_STOCK alias SafeStock
   etag master ChangedAt
 {
   field ( readonly, numbering : managed ) ReqId, ReqItemId, ItemId;
-
-  field ( readonly )
-    OldEnvId, OldPlantId, OldMatGroup, OldMinQty, OldVersionNo;
-
-  field ( readonly )
-    CreatedBy, CreatedAt, ChangedBy, ChangedAt, VersionNo;
-
+  field ( readonly ) SourceItemId, ConfId, ActionType, LineStatus, VersionNo;
+  field ( readonly ) OldEnvId, OldPlantId, OldMatGroup, OldMinQty, OldVersionNo;
+  field ( readonly ) CreatedBy, CreatedAt, ChangedBy, ChangedAt;
   field ( mandatory ) EnvId, PlantId, MatGroup, MinQty;
 
   create;
   update;
-  delete;
-
-  action ( features : instance ) approve result [1] $self;
-
-  determination set_defaults   on modify { field SourceItemId, ActionType; }
-  determination setAdminFields on modify { field EnvId, PlantId, MatGroup, MinQty, ChangeNote; }
 
   draft action Edit;
   draft action Activate;
