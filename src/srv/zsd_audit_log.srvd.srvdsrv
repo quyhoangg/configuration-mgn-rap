@@ -1,0 +1,4 @@
+@EndUserText.label: 'Audit Log Service'
+define service ZSD_AUDIT_LOG {
+  expose ZC_AUDIT_LOG as AuditLog;
+}

@@ -1,6 +1,5 @@
-@EndUserText.label: 'Authorization for Request Header'
-@MappingRole: true
-define role ZIR_CONF_REQ_H {
-  grant select on ZIR_CONF_REQ_H
-  where 1 = 1;
-}
+ @EndUserText.label: 'Authorization for Request Header'                                                                                                                                              @MappingRole: true                                                                                                                                                                                
+  define role ZIR_CONF_REQ_H {                                                                                                                                                                      
+    grant select on ZIR_CONF_REQ_H
+      where CreatedBy = aspect user;
+  }

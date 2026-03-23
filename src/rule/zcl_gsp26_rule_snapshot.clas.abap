@@ -84,78 +84,83 @@ CLASS zcl_gsp26_rule_snapshot IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD create_approve_snapshot.
+      DATA lt_logs TYPE STANDARD TABLE OF zauditlog.
+      DATA ls_log TYPE zauditlog.
 
-    DATA ls_log TYPE zauditlog.
+      " 1) Snapshot ZSD_PRICE_CONF records
+      SELECT * FROM zsd_price_conf
+        WHERE req_id = @iv_req_id
+        INTO TABLE @DATA(lt_price).
 
-    " 1) Snapshot ZSD_PRICE_CONF records
-    SELECT * FROM zsd_price_conf
-      WHERE req_id = @iv_req_id
-      INTO TABLE @DATA(lt_price).
+      LOOP AT lt_price INTO DATA(ls_price).
+        CLEAR ls_log.
+        TRY.
+            ls_log-log_id = cl_system_uuid=>create_uuid_x16_static( ).
+          CATCH cx_uuid_error.
+            CONTINUE.
+        ENDTRY.
+        ls_log-req_id      = iv_req_id.
+        ls_log-conf_id     = ls_price-item_id.
+        ls_log-module_id   = 'SD'.
+        ls_log-action_type = 'APPROVE'.
+        ls_log-table_name  = 'ZSD_PRICE_CONF'.
+        ls_log-env_id      = ls_price-env_id.
+        ls_log-object_key  = ls_price-item_id.
+        ls_log-changed_by  = iv_changed_by.
+        GET TIME STAMP FIELD ls_log-changed_at.
+        APPEND ls_log TO lt_logs.
+      ENDLOOP.
 
-    LOOP AT lt_price INTO DATA(ls_price).
-      CLEAR ls_log.
-      TRY.
-          ls_log-log_id = cl_system_uuid=>create_uuid_x16_static( ).
-        CATCH cx_uuid_error.
-          CONTINUE.
-      ENDTRY.
-      ls_log-req_id      = iv_req_id.
-      ls_log-conf_id     = ls_price-item_id.
-      ls_log-module_id   = 'SD'.
-      ls_log-action_type = 'APPROVE'.
-      ls_log-table_name  = 'ZSD_PRICE_CONF'.
-      ls_log-env_id      = ls_price-env_id.
-      ls_log-object_key  = ls_price-item_id.
-      ls_log-changed_by  = iv_changed_by.
-      GET TIME STAMP FIELD ls_log-changed_at.
-      INSERT zauditlog FROM @ls_log.
-    ENDLOOP.
+      IF lt_price IS NOT INITIAL.
+        APPEND VALUE #( success    = abap_true
+                        message    = 'SD Price snapshot created'
+                        table_name = 'ZSD_PRICE_CONF' )
+          TO rt_results.
+      ENDIF.
 
-    IF lt_price IS NOT INITIAL.
-      APPEND VALUE #( success    = abap_true
-                      message    = 'SD Price snapshot created'
-                      table_name = 'ZSD_PRICE_CONF' )
-        TO rt_results.
-    ENDIF.
+      " 2) Snapshot ZMMSAFESTOCK records
+      SELECT * FROM zmmsafestock
+        WHERE req_id = @iv_req_id
+        INTO TABLE @DATA(lt_stock).
 
-    " 2) Snapshot ZMMSAFESTOCK records
-    SELECT * FROM zmmsafestock
-      WHERE req_id = @iv_req_id
-      INTO TABLE @DATA(lt_stock).
+      LOOP AT lt_stock INTO DATA(ls_stock).
+        CLEAR ls_log.
+        TRY.
+            ls_log-log_id = cl_system_uuid=>create_uuid_x16_static( ).
+          CATCH cx_uuid_error.
+            CONTINUE.
+        ENDTRY.
+        ls_log-req_id      = iv_req_id.
+        ls_log-conf_id     = ls_stock-item_id.
+        ls_log-module_id   = 'MM'.
+        ls_log-action_type = 'APPROVE'.
+        ls_log-table_name  = 'ZMMSAFESTOCK'.
+        ls_log-env_id      = ls_stock-env_id.
+        ls_log-object_key  = ls_stock-item_id.
+        ls_log-changed_by  = iv_changed_by.
+        GET TIME STAMP FIELD ls_log-changed_at.
+        APPEND ls_log TO lt_logs.
+      ENDLOOP.
 
-    LOOP AT lt_stock INTO DATA(ls_stock).
-      CLEAR ls_log.
-      TRY.
-          ls_log-log_id = cl_system_uuid=>create_uuid_x16_static( ).
-        CATCH cx_uuid_error.
-          CONTINUE.
-      ENDTRY.
-      ls_log-req_id      = iv_req_id.
-      ls_log-module_id   = 'MM'.
-      ls_log-action_type = 'APPROVE'.
-      ls_log-table_name  = 'ZMMSAFESTOCK'.
-      ls_log-env_id      = ls_stock-env_id.
-      ls_log-object_key  = ls_stock-item_id.
-      ls_log-changed_by  = iv_changed_by.
-      GET TIME STAMP FIELD ls_log-changed_at.
-      INSERT zauditlog FROM @ls_log.
-    ENDLOOP.
+      IF lt_stock IS NOT INITIAL.
+        APPEND VALUE #( success    = abap_true
+                        message    = 'MM Safe Stock snapshot created'
+                        table_name = 'ZMMSAFESTOCK' )
+          TO rt_results.
+      ENDIF.
 
-    IF lt_stock IS NOT INITIAL.
-      APPEND VALUE #( success    = abap_true
-                      message    = 'MM Safe Stock snapshot created'
-                      table_name = 'ZMMSAFESTOCK' )
-        TO rt_results.
-    ENDIF.
+      " Batch INSERT — 1 lần thay vì từng dòng
+      IF lt_logs IS NOT INITIAL.
+        INSERT zauditlog FROM TABLE @lt_logs.
+      ENDIF.
 
-    IF rt_results IS INITIAL.
-      APPEND VALUE #( success    = abap_false
-                      message    = 'No config data found for request' )
-        TO rt_results.
-    ENDIF.
+      IF rt_results IS INITIAL.
+        APPEND VALUE #( success    = abap_false
+                        message    = 'No config data found for request' )
+          TO rt_results.
+      ENDIF.
 
-  ENDMETHOD.
-
+    ENDMETHOD.
   METHOD restore_from_snapshot.
 
     DATA ls_log TYPE zauditlog.

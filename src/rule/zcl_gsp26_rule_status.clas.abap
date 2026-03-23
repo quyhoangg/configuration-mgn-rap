@@ -1,50 +1,59 @@
-CLASS zcl_gsp26_rule_status DEFINITION PUBLIC FINAL CREATE PUBLIC.
-  PUBLIC SECTION.
-    " Các hằng số trạng thái chuẩn
-    CONSTANTS: cv_draft       TYPE string VALUE 'DRAFT',
-               cv_submitted   TYPE string VALUE 'SUBMITTED',
-               cv_approved    TYPE string VALUE 'APPROVED',
-               cv_rejected    TYPE string VALUE 'REJECTED',
-               cv_promoted    TYPE string VALUE 'PROMOTED',
-               cv_rolled_back TYPE string VALUE 'ROLLED_BACK'.
+ CLASS zcl_gsp26_rule_status DEFINITION PUBLIC FINAL CREATE PUBLIC.                                                                                                                                    PUBLIC SECTION.
+      CONSTANTS: cv_draft       TYPE string VALUE 'DRAFT',
+                 cv_submitted   TYPE string VALUE 'SUBMITTED',
+                 cv_approved    TYPE string VALUE 'APPROVED',
+                 cv_rejected    TYPE string VALUE 'REJECTED',
+                 cv_promoted    TYPE string VALUE 'PROMOTED',
+                 cv_active      TYPE string VALUE 'ACTIVE',
+                 cv_rolled_back TYPE string VALUE 'ROLLED_BACK'.
 
-    CLASS-METHODS is_transition_valid
-      IMPORTING iv_req_id      TYPE sysuuid_x16
-                iv_next_status TYPE string
-      RETURNING VALUE(rv_allowed) TYPE abap_bool.
-ENDCLASS.
+      " Method cũ — giữ lại để không break code khác
+      CLASS-METHODS is_transition_valid
+        IMPORTING iv_req_id      TYPE sysuuid_x16
+                  iv_next_status TYPE string
+        RETURNING VALUE(rv_allowed) TYPE abap_bool.
 
-CLASS zcl_gsp26_rule_status IMPLEMENTATION.
-  METHOD is_transition_valid.
-    DATA lv_current_status TYPE string.
-    rv_allowed = abap_false.
+      " Method mới — dùng trong RAP context (không SELECT DB)
+      CLASS-METHODS is_transition_valid_by_status
+        IMPORTING iv_current_status TYPE string
+                  iv_next_status    TYPE string
+        RETURNING VALUE(rv_allowed) TYPE abap_bool.
+  ENDCLASS.
 
-    " Lấy trạng thái hiện tại từ bảng Header của Request
-    SELECT SINGLE status FROM zconfreqh
-      WHERE req_id = @iv_req_id
-      INTO @lv_current_status.
+  CLASS zcl_gsp26_rule_status IMPLEMENTATION.
 
-    CASE lv_current_status.
-      WHEN cv_draft.
-        " Chỉ cho phép Submit từ DRAFT
-        IF iv_next_status = cv_submitted. rv_allowed = abap_true. ENDIF.
+    METHOD is_transition_valid.
+      " Lấy trạng thái từ DB rồi delegate
+      SELECT SINGLE status FROM zconfreqh
+        WHERE req_id = @iv_req_id
+        INTO @DATA(lv_current_status).
 
-      WHEN cv_submitted.
-        " Chỉ cho phép Approve/Reject từ SUBMITTED
-        IF iv_next_status = cv_approved OR iv_next_status = cv_rejected.
-          rv_allowed = abap_true.
-        ENDIF.
+       rv_allowed = is_transition_valid_by_status(
+        iv_current_status = CONV string( lv_current_status )
+        iv_next_status    = iv_next_status ).
+    ENDMETHOD.
 
-      WHEN cv_approved.
-        " Từ APPROVED có thể Promote hoặc Rollback
-        IF iv_next_status = cv_promoted OR iv_next_status = cv_rolled_back.
-          rv_allowed = abap_true.
-        ENDIF.
+    METHOD is_transition_valid_by_status.
+      rv_allowed = abap_false.
 
-      WHEN cv_promoted.
-        " Đã Promote vẫn có thể Rollback nếu có lỗi trên hệ thống thực tế
-        IF iv_next_status = cv_rolled_back. rv_allowed = abap_true. ENDIF.
+      CASE iv_current_status.
+        WHEN cv_draft.
+          IF iv_next_status = cv_submitted. rv_allowed = abap_true. ENDIF.
 
-    ENDCASE.
-  ENDMETHOD.
-ENDCLASS.
+        WHEN cv_submitted.
+          IF iv_next_status = cv_approved OR iv_next_status = cv_rejected.
+            rv_allowed = abap_true.
+          ENDIF.
+
+        WHEN cv_approved.
+          IF iv_next_status = cv_promoted OR iv_next_status = cv_active OR iv_next_status = cv_rolled_back.
+            rv_allowed = abap_true.
+          ENDIF.
+
+        WHEN cv_promoted OR cv_active.
+          IF iv_next_status = cv_rolled_back. rv_allowed = abap_true. ENDIF.
+
+      ENDCASE.
+    ENDMETHOD.
+
+  ENDCLASS.
