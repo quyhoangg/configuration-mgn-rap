@@ -54,20 +54,14 @@ CLASS lhc_RouteConf IMPLEMENTATION.
       " Trigger của determination là { field SourceItemId, ActionType } — nếu
       " MODIFY này ghi lại ActionType thì sẽ tự trigger lại chính nó → RAISE_SHORTDUMP.
       " Frontend luôn gửi ActionType đúng ('U'/'C'/'X') nên không cần default ở đây.
-      DATA(lv_req_item_id) = COND sysuuid_x16(
-                               WHEN <r>-ReqItemId IS INITIAL
-                               THEN cl_system_uuid=>create_uuid_x16_static( )
-                               ELSE <r>-ReqItemId ).
-
       MODIFY ENTITIES OF zi_mm_route_conf IN LOCAL MODE
         ENTITY RouteConf
-        UPDATE FIELDS ( IsAllowed VersionNo ReqItemId )
+        UPDATE FIELDS ( IsAllowed VersionNo )
         WITH VALUE #(
           (
-            %tky       = <r>-%tky
-            IsAllowed  = lv_is_allowed
-            VersionNo  = lv_version_no
-            ReqItemId  = lv_req_item_id
+            %tky      = <r>-%tky
+            IsAllowed = lv_is_allowed
+            VersionNo = lv_version_no
           )
         ).
 

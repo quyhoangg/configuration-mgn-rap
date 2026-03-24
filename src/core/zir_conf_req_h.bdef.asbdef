@@ -29,7 +29,7 @@ authorization master ( instance )
   // ReqId: RAP tự generate UUID (managed numbering)
   field ( numbering : managed, readonly ) ReqId;
 
-  draft action Edit;
+  draft action ( features : instance )Edit;
   draft action Activate;
   draft action Discard;
   draft action Resume;
@@ -39,12 +39,16 @@ authorization master ( instance )
   }
 
   // --- ĐÃ BỔ SUNG authorization : instance VÀO ĐÂY ---
-  action ( features : instance ) submit result [1] $self;
-  action ( features : instance ) rollback result [1] $self;
-  action ( features : instance ) approve result [1] $self;
-  action ( features : instance ) reject parameter ZABSTR_REJECT_REASON result [1] $self;
-  action ( features : instance ) promote result [1] $self;
-  action ( features : instance ) updateReason parameter ZABSTR_REJECT_REASON result [1] $self;
+
+    action ( features : instance ) submit result [1] $self;
+    action ( features : instance ) rollback result [1] $self;
+    action ( features : instance ) approve result [1] $self;
+    action ( features : instance ) reject parameter ZABSTR_REJECT_REASON
+  result [1] $self;
+    action ( features : instance ) promote result [1] $self;
+    action ( features : instance ) apply result [1] $self;
+    action ( features : instance ) updateReason parameter
+  ZABSTR_REJECT_REASON result [1] $self;
 
 
   static action createRequest

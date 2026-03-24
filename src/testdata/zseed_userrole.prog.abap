@@ -3,9 +3,9 @@ REPORT zseed_userrole.
 DATA ls_role TYPE zuserrole.
 
 ls_role-user_id    = sy-uname.
-ls_role-fullname   = 'Quý Hoàng'.
+ls_role-fullname   = 'BAO'.
 ls_role-module_id  = 'ALL'.
-ls_role-role_level = 'MANAGER'.
+ls_role-role_level = 'IT ADMIN'.
 ls_role-is_active  = abap_true.
 ls_role-org_access = '*'.
 

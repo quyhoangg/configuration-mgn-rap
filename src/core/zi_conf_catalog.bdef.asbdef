@@ -7,7 +7,7 @@ persistent table zconfcatalog
 draft table zconfcatalog_d
 lock master
 total etag ChangedAt
-authorization master ( instance  )
+authorization master ( global, instance )
 etag master ChangedAt
 {
   create;

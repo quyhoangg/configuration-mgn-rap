@@ -2,4 +2,5 @@
 define service ZSD_conf_req {
   expose ZC_CONF_REQ_H;
   expose ZC_CONF_REQ_I;
+  expose ZI_CURRENT_USER_ROLE;
 }

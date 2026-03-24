@@ -1,6 +1,9 @@
 CLASS lhc_Catalog DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 
+    METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
+      IMPORTING REQUEST requested_authorizations FOR Catalog RESULT result.
+
     METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
       IMPORTING keys REQUEST requested_authorizations FOR Catalog RESULT result.
 
@@ -14,36 +17,40 @@ ENDCLASS.
 
 CLASS lhc_Catalog IMPLEMENTATION.
 
+  METHOD get_global_authorizations.
+    DATA lv_role TYPE c LENGTH 20.
+    SELECT SINGLE role_level FROM zuserrole
+      WHERE user_id  = @sy-uname
+        AND is_active = @abap_true
+      INTO @lv_role.
+
+    DATA(lv_auth_create) = COND #(
+      WHEN lv_role = 'IT ADMIN'
+      THEN if_abap_behv=>auth-allowed
+      ELSE if_abap_behv=>auth-unauthorized ).
+
+    result-%create = lv_auth_create.
+  ENDMETHOD.
+
   METHOD get_instance_authorizations.
+    DATA lv_role TYPE c LENGTH 20.
+    SELECT SINGLE role_level FROM zuserrole
+      WHERE user_id  = @sy-uname
+        AND is_active = @abap_true
+      INTO @lv_role.
 
-    " DATA lv_role TYPE zde_role_level.
+    DATA(lv_auth_edit) = COND #(
+      WHEN lv_role = 'IT ADMIN'
+      THEN if_abap_behv=>auth-allowed
+      ELSE if_abap_behv=>auth-unauthorized ).
 
-    "  SELECT SINGLE role_level
-    "    FROM zuserrole
-    "   WHERE user_id   = @sy-uname
-    "     AND is_active = @abap_true
-    "   INTO @lv_role.
-
-    " LOOP AT keys INTO DATA(key).
-    "    APPEND VALUE #(
-    "       %tky = key-%tky
-    "      %update      = COND #( WHEN lv_role = 'IT ADMIN'
-    "                            THEN if_abap_behv=>auth-allowed
-    "                             ELSE if_abap_behv=>auth-unauthorized )
-    "      %delete      = COND #( WHEN lv_role = 'IT ADMIN'
-    "                            THEN if_abap_behv=>auth-allowed
-    "                            ELSE if_abap_behv=>auth-unauthorized )
-    "    %action-Edit = COND #( WHEN lv_role = 'IT ADMIN'
-    "                             THEN if_abap_behv=>auth-allowed
-    "                             ELSE if_abap_behv=>auth-unauthorized )
-    "   ) TO result.
-    "    ENDLOOP.
     LOOP AT keys INTO DATA(key).
       APPEND VALUE #(
-      %tky = key-%tky
-       %update = if_abap_behv=>auth-allowed
-       %delete = if_abap_behv=>auth-allowed
-       %action-Edit = if_abap_behv=>auth-allowed ) TO result.
+        %tky         = key-%tky
+        %update      = lv_auth_edit
+        %delete      = lv_auth_edit
+        %action-Edit = lv_auth_edit
+      ) TO result.
     ENDLOOP.
   ENDMETHOD.
 

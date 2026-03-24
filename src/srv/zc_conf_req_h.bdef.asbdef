@@ -19,6 +19,7 @@ define behavior for ZC_CONF_REQ_H
   use action approve;
   use action reject;
   use action promote;
+  use action apply;
   use action rollback;
   use action createRequest;
 
