@@ -25,7 +25,6 @@ authorization master ( instance )
 
   // Status chỉ đổi bằng action
   field ( readonly ) Status;
-  field ( readonly ) EnvId;
 
   // ReqId: RAP tự generate UUID (managed numbering)
   field ( numbering : managed, readonly ) ReqId;

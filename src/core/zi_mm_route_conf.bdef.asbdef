@@ -18,28 +18,28 @@ etag master ChangedAt
   field ( readonly ) ReqItemId;
   field ( readonly, numbering : managed ) ItemId;
 
-  field ( readonly ) SourceItemId, ConfId;
-
-  // Old snapshot không cho user sửa
-  field ( readonly )
-    OldEnvId,
-    OldPlantId,
-    OldSendWh,
-    OldReceiveWh,
-    OldInspectorId,
-    OldTransMode,
-    OldIsAllowed,
-    OldVersionNo;
+  field ( readonly : update ) SourceItemId;
+  field ( readonly : update ) ConfId;
 
   field ( readonly )
-    CreatedBy, CreatedAt, ChangedBy, ChangedAt, VersionNo;
+  OldEnvId,
+  OldPlantId,
+  OldSendWh,
+  OldReceiveWh,
+  OldInspectorId,
+  OldTransMode,
+  OldIsAllowed,
+  OldVersionNo;
+
+  field ( readonly )
+  CreatedBy, CreatedAt, ChangedBy, ChangedAt, VersionNo;
 
   determination set_defaults on modify { field SourceItemId, ActionType; }
   determination setAdminFields on modify { field EnvId, PlantId, SendWh, ReceiveWh, InspectorId, TransMode, IsAllowed, ChangeNote; }
   action ( features : instance ) approve result [1] $self;
 
   validation validate_mandatory on save { create; update; }
-  validation validate_business  on save { create; update; }
+  validation validate_business on save { create; update; }
 
   draft action Edit;
   draft action Activate;
@@ -53,38 +53,38 @@ etag master ChangedAt
 
   mapping for zmmrouteconf_req
   {
-    ReqId          = req_id;
-    ReqItemId      = req_item_id;
-    ItemId         = item_id;
+    ReqId = req_id;
+    ReqItemId = req_item_id;
+    ItemId = item_id;
 
-    SourceItemId   = source_item_id;
-    ConfId         = conf_id;
-    ActionType     = action_type;
+    SourceItemId = source_item_id;
+    ConfId = conf_id;
+    ActionType = action_type;
 
-    OldEnvId       = old_env_id;
-    OldPlantId     = old_plant_id;
-    OldSendWh      = old_send_wh;
-    OldReceiveWh   = old_receive_wh;
+    OldEnvId = old_env_id;
+    OldPlantId = old_plant_id;
+    OldSendWh = old_send_wh;
+    OldReceiveWh = old_receive_wh;
     OldInspectorId = old_inspector_id;
-    OldTransMode   = old_trans_mode;
-    OldIsAllowed   = old_is_allowed;
-    OldVersionNo   = old_version_no;
+    OldTransMode = old_trans_mode;
+    OldIsAllowed = old_is_allowed;
+    OldVersionNo = old_version_no;
 
-    EnvId          = env_id;
-    PlantId        = plant_id;
-    SendWh         = send_wh;
-    ReceiveWh      = receive_wh;
-    InspectorId    = inspector_id;
-    TransMode      = trans_mode;
-    IsAllowed      = is_allowed;
-    VersionNo      = version_no;
+    EnvId = env_id;
+    PlantId = plant_id;
+    SendWh = send_wh;
+    ReceiveWh = receive_wh;
+    InspectorId = inspector_id;
+    TransMode = trans_mode;
+    IsAllowed = is_allowed;
+    VersionNo = version_no;
 
-    LineStatus     = line_status;
-    ChangeNote     = change_note;
+    LineStatus = line_status;
+    ChangeNote = change_note;
 
-    CreatedBy      = created_by;
-    CreatedAt      = created_at;
-    ChangedBy      = changed_by;
-    ChangedAt      = changed_at;
+    CreatedBy = created_by;
+    CreatedAt = created_at;
+    ChangedBy = changed_by;
+    ChangedAt = changed_at;
   }
 }

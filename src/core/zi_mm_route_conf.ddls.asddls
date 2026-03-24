@@ -32,15 +32,19 @@ define root view entity ZI_MM_ROUTE_CONF
       plant_id         as PlantId,
 
       @EndUserText.label: 'Sending Warehouse'
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_VH_WAREHOUSE', element: 'WhId' } }]
       send_wh          as SendWh,
 
       @EndUserText.label: 'Receiving Warehouse'
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_VH_WAREHOUSE', element: 'WhId' } }]
       receive_wh       as ReceiveWh,
 
       @EndUserText.label: 'Inspector'
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_VH_INSPECTOR', element: 'UserId' } }]
       inspector_id     as InspectorId,
 
       @EndUserText.label: 'Transport Mode'
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'ZI_VH_TRANS_MODE', element: 'TransMode' } }]
       trans_mode       as TransMode,
 
       @EndUserText.label: 'Allowed'

@@ -47,47 +47,41 @@ CLASS lhc_RouteConf IMPLEMENTATION.
                               ELSE <r>-VersionNo ).
 
       DATA(lv_action_type) = COND zde_action_type(
-                               WHEN <r>-ActionType IS INITIAL THEN 'CREATE'
+                               WHEN <r>-ActionType IS INITIAL THEN 'C'
                                ELSE <r>-ActionType ).
+
+      " NOTE: ActionType bị xóa khỏi UPDATE FIELDS để tránh vòng lặp vô hạn.
+      " Trigger của determination là { field SourceItemId, ActionType } — nếu
+      " MODIFY này ghi lại ActionType thì sẽ tự trigger lại chính nó → RAISE_SHORTDUMP.
+      " Frontend luôn gửi ActionType đúng ('U'/'C'/'X') nên không cần default ở đây.
+      DATA(lv_req_item_id) = COND sysuuid_x16(
+                               WHEN <r>-ReqItemId IS INITIAL
+                               THEN cl_system_uuid=>create_uuid_x16_static( )
+                               ELSE <r>-ReqItemId ).
 
       MODIFY ENTITIES OF zi_mm_route_conf IN LOCAL MODE
         ENTITY RouteConf
-        UPDATE FIELDS ( IsAllowed VersionNo ActionType )
+        UPDATE FIELDS ( IsAllowed VersionNo ReqItemId )
         WITH VALUE #(
           (
             %tky       = <r>-%tky
             IsAllowed  = lv_is_allowed
             VersionNo  = lv_version_no
-            ActionType = lv_action_type
+            ReqItemId  = lv_req_item_id
           )
         ).
 
-      " ── Auto-populate ReqItemId + ConfId từ ZCONFREQI khi user tạo row mới ──
-      IF <r>-ReqId IS NOT INITIAL AND <r>-ReqItemId IS INITIAL.
-
-        SELECT SINGLE req_item_id, conf_id
-          FROM zconfreqi
-          WHERE req_id = @<r>-ReqId
-          INTO @DATA(ls_req_item).
-
-        IF sy-subrc = 0.
-          MODIFY ENTITIES OF zi_mm_route_conf IN LOCAL MODE
-            ENTITY RouteConf
-            UPDATE FIELDS ( ReqItemId ConfId )
-            WITH VALUE #(
-              (
-                %tky      = <r>-%tky
-                ReqItemId = ls_req_item-req_item_id
-                ConfId    = ls_req_item-conf_id
-              )
-            ).
-        ENDIF.
-
-      ENDIF.
-
-      IF lv_action_type = 'UPDATE' OR lv_action_type = 'DELETE'.
+      " ── For U/X rows: populate OldXxx only if frontend didn't send them ──
+      " NOTE: Do NOT overwrite new values (EnvId/PlantId/...) — frontend sends
+      "       the user's intended changes. Only fill OldXxx as a fallback.
+      IF lv_action_type = 'U' OR lv_action_type = 'X'.
 
         IF <r>-SourceItemId IS INITIAL.
+          CONTINUE.
+        ENDIF.
+
+        " Skip if frontend already sent all Old snapshot fields
+        IF <r>-OldEnvId IS NOT INITIAL OR <r>-OldPlantId IS NOT INITIAL.
           CONTINUE.
         ENDIF.
 
@@ -100,6 +94,7 @@ CLASS lhc_RouteConf IMPLEMENTATION.
           CONTINUE.
         ENDIF.
 
+        " Populate only OldXxx — never touch the new value fields
         MODIFY ENTITIES OF zi_mm_route_conf IN LOCAL MODE
           ENTITY RouteConf
           UPDATE FIELDS (
@@ -111,19 +106,10 @@ CLASS lhc_RouteConf IMPLEMENTATION.
             OldTransMode
             OldIsAllowed
             OldVersionNo
-            EnvId
-            PlantId
-            SendWh
-            ReceiveWh
-            InspectorId
-            TransMode
-            IsAllowed
-            VersionNo
           )
           WITH VALUE #(
             (
               %tky            = <r>-%tky
-
               OldEnvId        = ls_src-env_id
               OldPlantId      = ls_src-plant_id
               OldSendWh       = ls_src-send_wh
@@ -132,15 +118,6 @@ CLASS lhc_RouteConf IMPLEMENTATION.
               OldTransMode    = ls_src-trans_mode
               OldIsAllowed    = ls_src-is_allowed
               OldVersionNo    = ls_src-version_no
-
-                  EnvId           = ls_src-env_id
-                  PlantId         = ls_src-plant_id
-                  SendWh          = ls_src-send_wh
-                  ReceiveWh       = ls_src-receive_wh
-                  InspectorId     = ls_src-inspector_id
-                  TransMode       = ls_src-trans_mode
-                  IsAllowed       = ls_src-is_allowed
-                  VersionNo       = ls_src-version_no
             )
           ).
 
@@ -206,7 +183,7 @@ CLASS lhc_RouteConf IMPLEMENTATION.
 
     LOOP AT lt_data ASSIGNING FIELD-SYMBOL(<r>).
 
-      IF <r>-ActionType = 'CREATE'.
+      IF <r>-ActionType = 'C'.
         IF <r>-ReqId IS INITIAL OR
            <r>-EnvId IS INITIAL OR
            <r>-PlantId IS INITIAL OR
@@ -225,7 +202,7 @@ CLASS lhc_RouteConf IMPLEMENTATION.
         ENDIF.
       ENDIF.
 
-      IF ( <r>-ActionType = 'UPDATE' OR <r>-ActionType = 'DELETE' )
+      IF ( <r>-ActionType = 'U' OR <r>-ActionType = 'X' )
          AND <r>-SourceItemId IS INITIAL.
 
         APPEND VALUE #( %tky = <r>-%tky ) TO failed-RouteConf.
@@ -238,7 +215,7 @@ CLASS lhc_RouteConf IMPLEMENTATION.
           TO reported-RouteConf.
       ENDIF.
 
-      IF ( <r>-ActionType = 'UPDATE' OR <r>-ActionType = 'DELETE' )
+      IF ( <r>-ActionType = 'U' OR <r>-ActionType = 'X' )
          AND <r>-SourceItemId IS NOT INITIAL.
 
         SELECT SINGLE item_id
@@ -348,11 +325,11 @@ CLASS lhc_RouteConf IMPLEMENTATION.
         is_allowed   = <req>-IsAllowed
         version_no   = lv_new_version
         created_by   = COND #(
-                         WHEN <req>-ActionType = 'CREATE'
+                         WHEN <req>-ActionType = 'C'
                          THEN sy-uname
                          ELSE <req>-CreatedBy )
         created_at   = COND #(
-                         WHEN <req>-ActionType = 'CREATE'
+                         WHEN <req>-ActionType = 'C'
                          THEN lv_now
                          ELSE <req>-CreatedAt )
         changed_by   = sy-uname
@@ -362,7 +339,7 @@ CLASS lhc_RouteConf IMPLEMENTATION.
       " Lấy dữ liệu CŨ trước khi thay đổi để làm Rollback Snapshot
       DATA ls_old_route TYPE zmmrouteconf.
       CLEAR ls_old_route.
-      IF <req>-ActionType = 'UPDATE' OR <req>-ActionType = 'DELETE'.
+      IF <req>-ActionType = 'U' OR <req>-ActionType = 'X'.
         SELECT SINGLE * FROM zmmrouteconf WHERE item_id = @ls_conf-item_id INTO @ls_old_route.
       ENDIF.
       TRY.
@@ -384,7 +361,7 @@ CLASS lhc_RouteConf IMPLEMENTATION.
       TRY.
           CASE <req>-ActionType.
 
-            WHEN 'DELETE'.
+            WHEN 'X'.
               DELETE FROM zmmrouteconf
                 WHERE item_id = @ls_conf-item_id.
 

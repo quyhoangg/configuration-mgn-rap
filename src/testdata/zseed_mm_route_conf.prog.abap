@@ -5,14 +5,12 @@
 *&---------------------------------------------------------------------*
 REPORT zseed_mm_route_conf.
 
-UPDATE zmmrouteconf
-  SET env_id = 'DEV'
-  WHERE env_id IN ('TEST', 'QAS', 'PRD').
+DELETE FROM zmmrouteconf_req WHERE 1 = 1.
 
 COMMIT WORK.
 
 IF sy-subrc = 0.
-  WRITE: / |Done. { sy-dbcnt } rows updated to ENV_ID = 'DEV'.|.
+  WRITE: / |Done. { sy-dbcnt } rows deleted from ZMMROUTECONF_REQ.|.
 ELSE.
   WRITE: / |Error. sy-subrc = { sy-subrc }.|.
 ENDIF.

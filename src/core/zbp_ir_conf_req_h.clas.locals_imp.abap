@@ -939,45 +939,9 @@ CLASS lhc_Req IMPLEMENTATION.
       lv_req_item_id_x16 = ls_mapped-item[ 1 ]-%key-ReqItemId.
 
       " ── Snapshot theo TargetCds ──
+      " NOTE: ZI_MM_ROUTE_CONF dùng delta model — frontend chỉ ghi các dòng
+      " thực sự thay đổi vào zmmrouteconf_req, không snapshot toàn bộ.
       CASE ls_key-%param-TargetCds.
-
-        WHEN 'ZI_MM_ROUTE_CONF'.
-          SELECT * FROM zmmrouteconf
-            WHERE env_id = @lv_env
-            INTO TABLE @lt_route.
-
-          LOOP AT lt_route INTO ls_route.
-            INSERT zmmrouteconf_req FROM @( VALUE zmmrouteconf_req(
-              client           = sy-mandt
-              req_id           = lv_req_id_x16
-              req_item_id      = lv_req_item_id_x16
-              item_id          = cl_system_uuid=>create_uuid_x16_static( )
-              source_item_id   = ls_route-item_id
-              conf_id          = lv_conf_id_x16
-              action_type      = 'U'
-              old_env_id       = ls_route-env_id
-              old_plant_id     = ls_route-plant_id
-              old_send_wh      = ls_route-send_wh
-              old_receive_wh   = ls_route-receive_wh
-              old_inspector_id = ls_route-inspector_id
-              old_trans_mode   = ls_route-trans_mode
-              old_is_allowed   = ls_route-is_allowed
-              old_version_no   = ls_route-version_no
-              env_id           = ls_route-env_id
-              plant_id         = ls_route-plant_id
-              send_wh          = ls_route-send_wh
-              receive_wh       = ls_route-receive_wh
-              inspector_id     = ls_route-inspector_id
-              trans_mode       = ls_route-trans_mode
-              is_allowed       = ls_route-is_allowed
-              version_no       = ls_route-version_no
-              line_status      = gc_st_draft
-              created_by       = sy-uname
-              created_at       = lv_now
-              changed_by       = sy-uname
-              changed_at       = lv_now
-            ) ).
-          ENDLOOP.
 
         WHEN 'ZI_MM_SAFE_STOCK'.
           SELECT * FROM zmmsafestock
