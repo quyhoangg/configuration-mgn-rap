@@ -11,6 +11,7 @@ define view entity ZC_SD_PRICE_MAIN
   as select from zsd_price_conf
 {
   key item_id       as ItemId,
+      req_id        as ReqId,
       env_id        as EnvId,
       branch_id     as BranchId,
       cust_group    as CustGroup,
@@ -24,5 +25,7 @@ define view entity ZC_SD_PRICE_MAIN
       currency      as Currency,
       valid_from    as ValidFrom,
       valid_to      as ValidTo,
-      version_no    as VersionNo
+      version_no    as VersionNo,
+        created_by    as CreatedBy,
+        created_at    as CreatedAt
 }

@@ -265,7 +265,7 @@ CLASS lhc_Req IMPLEMENTATION.
 
           CLEAR lv_record_exists.
           CASE <ss>-action_type.
-            WHEN 'U'.
+            WHEN 'UPDATE'.
               SELECT SINGLE @abap_true FROM zmmsafestock WHERE item_id = @<ss>-source_item_id INTO @lv_record_exists.
               IF lv_record_exists = abap_true.
                 UPDATE zmmsafestock SET
@@ -279,7 +279,7 @@ CLASS lhc_Req IMPLEMENTATION.
                   changed_at = @lv_now
                 WHERE item_id = @<ss>-source_item_id.
               ENDIF.
-            WHEN 'C'.
+            WHEN 'CREATE'.
               INSERT zmmsafestock FROM @( VALUE zmmsafestock(
                 client     = sy-mandt
                 item_id    = <ss>-item_id
@@ -292,7 +292,7 @@ CLASS lhc_Req IMPLEMENTATION.
                 created_at = lv_now
                 changed_by = sy-uname
                 changed_at = lv_now ) ).
-            WHEN 'X'.
+            WHEN 'DELETE'.
               DELETE FROM zmmsafestock WHERE item_id = @<ss>-source_item_id.
           ENDCASE.
         ENDLOOP.
@@ -389,8 +389,8 @@ CLASS lhc_Req IMPLEMENTATION.
           CLEAR ls_audit_log.
 
           CLEAR lv_record_exists.
-          CASE <fi>-action_type.
-            WHEN 'U'.
+           CASE <fi>-action_type.
+              WHEN 'UPDATE' OR 'U'.
               SELECT SINGLE @abap_true FROM zfilimitconf WHERE item_id = @<fi>-source_item_id INTO @lv_record_exists.
               IF lv_record_exists = abap_true.
                 UPDATE zfilimitconf SET
@@ -405,8 +405,8 @@ CLASS lhc_Req IMPLEMENTATION.
                   changed_at    = @lv_now
                 WHERE item_id = @<fi>-source_item_id.
               ENDIF.
-            WHEN 'C'.
-              INSERT zfilimitconf FROM @( VALUE zfilimitconf(
+        WHEN 'CREATE' OR 'C'.
+                INSERT zfilimitconf FROM @( VALUE zfilimitconf(
                 client        = sy-mandt
                 item_id       = <fi>-item_id
                 req_id        = <r>-ReqId
@@ -419,8 +419,8 @@ CLASS lhc_Req IMPLEMENTATION.
                 created_at    = lv_now
                 changed_by    = sy-uname
                 changed_at    = lv_now ) ).
-            WHEN 'X'.
-              DELETE FROM zfilimitconf WHERE item_id = @<fi>-source_item_id.
+             WHEN 'DELETE' OR 'X'.
+                DELETE FROM zfilimitconf WHERE item_id = @<fi>-source_item_id.
           ENDCASE.
         ENDLOOP.
         UPDATE zfilimitreq SET line_status = @gc_st_approved, changed_by = @sy-uname, changed_at = @lv_now WHERE req_id = @<r>-ReqId.
@@ -452,7 +452,7 @@ CLASS lhc_Req IMPLEMENTATION.
 
           CLEAR lv_record_exists.
           CASE <sd>-action_type.
-            WHEN 'U'.
+            WHEN 'UPDATE'.
               SELECT SINGLE @abap_true FROM zsd_price_conf WHERE item_id = @<sd>-source_item_id INTO @lv_record_exists.
               IF lv_record_exists = abap_true.
                 UPDATE zsd_price_conf SET
@@ -471,7 +471,7 @@ CLASS lhc_Req IMPLEMENTATION.
                   changed_at    = @lv_now
                 WHERE item_id = @<sd>-source_item_id.
               ENDIF.
-            WHEN 'C'.
+            WHEN 'CREATE'.
               INSERT zsd_price_conf FROM @( VALUE zsd_price_conf(
                 client        = sy-mandt
                 item_id       = <sd>-item_id
@@ -489,7 +489,7 @@ CLASS lhc_Req IMPLEMENTATION.
                 created_at    = lv_now
                 changed_by    = sy-uname
                 changed_at    = lv_now ) ).
-            WHEN 'X'.
+            WHEN 'DELETE'.
               DELETE FROM zsd_price_conf WHERE item_id = @<sd>-source_item_id.
           ENDCASE.
         ENDLOOP.
@@ -993,7 +993,7 @@ reported-req.
       IF lt_route_req IS NOT INITIAL.
         LOOP AT lt_route_req ASSIGNING FIELD-SYMBOL(<rt>).
           CASE <rt>-action_type.
-            WHEN 'U'.
+            WHEN 'UPDATE'.
               SELECT SINGLE @abap_true FROM zmmrouteconf
                 WHERE item_id = @<rt>-source_item_id INTO
 @DATA(lv_rt_exists).
@@ -1010,7 +1010,7 @@ reported-req.
                 WHERE item_id = @<rt>-source_item_id.
               ENDIF.
               CLEAR lv_rt_exists.
-            WHEN 'C'.
+            WHEN 'CREATE'.
               INSERT zmmrouteconf FROM @( VALUE zmmrouteconf(
                 client = sy-mandt  item_id = <rt>-item_id  req_id =
 <r>-ReqId
@@ -1021,7 +1021,7 @@ reported-req.
                 is_allowed = <rt>-is_allowed  version_no = 1
                 created_by = sy-uname  created_at = lv_now
                 changed_by = sy-uname  changed_at = lv_now ) ).
-            WHEN 'X'.
+            WHEN 'DELETE'.
               DELETE FROM zmmrouteconf WHERE item_id =
 @<rt>-source_item_id.
           ENDCASE.
@@ -1038,7 +1038,7 @@ reported-req.
       IF lt_ss_req IS NOT INITIAL.
         LOOP AT lt_ss_req ASSIGNING FIELD-SYMBOL(<ss>).
           CASE <ss>-action_type.
-            WHEN 'U'.
+            WHEN 'UPDATE'.
               SELECT SINGLE @abap_true FROM zmmsafestock
                 WHERE item_id = @<ss>-source_item_id INTO
 @DATA(lv_ss_exists).
@@ -1051,15 +1051,15 @@ reported-req.
                 WHERE item_id = @<ss>-source_item_id.
               ENDIF.
               CLEAR lv_ss_exists.
-            WHEN 'C'.
-              INSERT zmmsafestock FROM @( VALUE zmmsafestock(
+            WHEN 'CREATE' OR 'C'.
+                INSERT zmmsafestock FROM @( VALUE zmmsafestock(
                 client = sy-mandt  item_id = <ss>-item_id  req_id =
 <r>-ReqId
                 env_id = <ss>-env_id  plant_id = <ss>-plant_id
                 mat_group = <ss>-mat_group  min_qty = <ss>-min_qty
                 version_no = 1  created_by = sy-uname  created_at = lv_now
                 changed_by = sy-uname  changed_at = lv_now ) ).
-            WHEN 'X'.
+             WHEN 'DELETE' OR 'X'.
               DELETE FROM zmmsafestock WHERE item_id =
 @<ss>-source_item_id.
           ENDCASE.
@@ -1076,7 +1076,7 @@ reported-req.
       IF lt_price_req IS NOT INITIAL.
         LOOP AT lt_price_req ASSIGNING FIELD-SYMBOL(<pr>).
           CASE <pr>-action_type.
-            WHEN 'U'.
+            WHEN 'UPDATE'.
               SELECT SINGLE @abap_true FROM zsd_price_conf
                 WHERE item_id = @<pr>-source_item_id INTO
 @DATA(lv_pr_exists).
@@ -1096,7 +1096,7 @@ reported-req.
                 WHERE item_id = @<pr>-source_item_id.
               ENDIF.
               CLEAR lv_pr_exists.
-            WHEN 'C'.
+            WHEN 'CREATE'.
               INSERT zsd_price_conf FROM @( VALUE zsd_price_conf(
                 client = sy-mandt  item_id = <pr>-item_id  req_id =
 <r>-ReqId
@@ -1109,7 +1109,7 @@ reported-req.
                 valid_from = <pr>-valid_from  valid_to = <pr>-valid_to
                 version_no = 1  created_by = sy-uname  created_at = lv_now
                 changed_by = sy-uname  changed_at = lv_now ) ).
-            WHEN 'X'.
+            WHEN 'DELETE'.
               DELETE FROM zsd_price_conf WHERE item_id =
 @<pr>-source_item_id.
           ENDCASE.
@@ -1126,7 +1126,7 @@ reported-req.
       IF lt_limit_req IS NOT INITIAL.
         LOOP AT lt_limit_req ASSIGNING FIELD-SYMBOL(<fl>).
           CASE <fl>-action_type.
-            WHEN 'U'.
+            WHEN 'UPDATE'.
               SELECT SINGLE @abap_true FROM zfilimitconf
                 WHERE item_id = @<fl>-source_item_id INTO
 @DATA(lv_fl_exists).
@@ -1143,7 +1143,7 @@ reported-req.
                 WHERE item_id = @<fl>-source_item_id.
               ENDIF.
               CLEAR lv_fl_exists.
-            WHEN 'C'.
+            WHEN 'CREATE'.
               INSERT zfilimitconf FROM @( VALUE zfilimitconf(
                 client = sy-mandt  item_id = <fl>-item_id  req_id =
 <r>-ReqId
@@ -1153,7 +1153,7 @@ reported-req.
                 currency = <fl>-currency  version_no = 1
                 created_by = sy-uname  created_at = lv_now
                 changed_by = sy-uname  changed_at = lv_now ) ).
-            WHEN 'X'.
+            WHEN 'DELETE'.
               DELETE FROM zfilimitconf WHERE item_id =
 @<fl>-source_item_id.
           ENDCASE.

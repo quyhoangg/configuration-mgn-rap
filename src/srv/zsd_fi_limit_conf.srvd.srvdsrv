@@ -5,4 +5,5 @@ define service ZSD_FI_LIMIT_CONF {
   expose ZC_ENV_DEF as EnvDef;
   expose ZC_VH_EXPENSE_TYPE as ExpenseTypeDef;
   expose ZC_VH_GL_ACCOUNT as GlAccountDef;
+  expose ZC_VH_CURRENCY as CurrencyDef;
 }

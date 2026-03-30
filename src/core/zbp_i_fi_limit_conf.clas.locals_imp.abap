@@ -43,7 +43,7 @@ CLASS lhc_LimitConf IMPLEMENTATION.
       ELSE.
         APPEND VALUE #(
           %tky       = <r>-%tky
-          ActionType = COND #( WHEN <r>-ActionType IS INITIAL THEN 'CREATE'
+          ActionType = COND #( WHEN <r>-ActionType IS INITIAL THEN 'C'
                                ELSE <r>-ActionType )
           VersionNo  = COND i( WHEN <r>-VersionNo IS INITIAL THEN 1
                                ELSE <r>-VersionNo )
@@ -60,7 +60,7 @@ CLASS lhc_LimitConf IMPLEMENTATION.
 
     " ── Phần 2: Load Old values cho UPDATE/DELETE ──
     LOOP AT lt_data ASSIGNING FIELD-SYMBOL(<r2>).
-      IF ( <r2>-ActionType = 'UPDATE' OR <r2>-ActionType = 'DELETE' )
+      IF ( <r2>-ActionType = 'U' OR <r2>-ActionType = 'X' )
         AND <r2>-SourceItemId IS NOT INITIAL
         AND <r2>-OldEnvId IS INITIAL.
 
@@ -270,11 +270,11 @@ CLASS lhc_LimitConf IMPLEMENTATION.
         currency      = <req>-Currency
         version_no    = lv_new_version
         created_by    = COND #(
-                          WHEN <req>-ActionType = 'CREATE'
+                          WHEN <req>-ActionType = 'C'
                           THEN sy-uname
                           ELSE <req>-CreatedBy )
         created_at    = COND #(
-                          WHEN <req>-ActionType = 'CREATE'
+                          WHEN <req>-ActionType = 'C'
                           THEN lv_now
                           ELSE <req>-CreatedAt )
         changed_by    = sy-uname
@@ -284,7 +284,7 @@ CLASS lhc_LimitConf IMPLEMENTATION.
             " Lấy dữ liệu CŨ trước khi thay đổi để làm Rollback Snapshot
       DATA ls_old_limit TYPE zfilimitconf.
       CLEAR ls_old_limit.
-      IF <req>-ActionType = 'UPDATE' OR <req>-ActionType = 'DELETE'.
+      IF <req>-ActionType = 'U' OR <req>-ActionType = 'X'.
         SELECT SINGLE * FROM zfilimitconf WHERE item_id = @ls_conf-item_id INTO @ls_old_limit.
       ENDIF.
 
@@ -307,7 +307,7 @@ CLASS lhc_LimitConf IMPLEMENTATION.
       TRY.
           CASE <req>-ActionType.
 
-            WHEN 'DELETE'.
+            WHEN 'X'.
               DELETE FROM zfilimitconf
                 WHERE item_id = @ls_conf-item_id.
 
