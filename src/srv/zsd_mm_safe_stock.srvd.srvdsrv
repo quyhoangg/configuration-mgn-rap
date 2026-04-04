@@ -1,6 +1,7 @@
 @EndUserText.label: 'Service Definition for MM Safe Stock'
 define service ZSD_MM_SAFE_STOCK {
   expose ZC_MM_SAFE_STOCK as MMSafeStock;
+  expose ZC_MM_SAFE_STOCK_MAIN as MMSafeStockMain;
   expose ZC_ENV_DEF as EnvDef;
   expose ZC_PLANT_UNIT as PlantUnit;
   expose ZI_VH_MATL_GRP as MatGroupVH;

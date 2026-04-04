@@ -12,7 +12,7 @@ authorization master ( instance )
 {
   create;
   update ( features : instance );
-  delete;
+  delete ( features : instance );
 
   association _Items { create; with draft; }
 
@@ -89,8 +89,8 @@ lock dependent by _Header
 authorization dependent by _Header
 etag master ChangedAt
 {
-  update;
-  delete;
+  update ( features : instance );
+  delete ( features : instance );
 
   // UUID generated
   field ( numbering : managed, readonly ) ReqItemId;

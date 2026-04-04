@@ -34,10 +34,18 @@ association [1..1] to ZI_ENV_DEF as _OldEnv
       old_min_qty    as OldMinQty,
       old_version_no as OldVersionNo,
 
+            @Semantics.user.createdBy: true
       created_by     as CreatedBy,
+
+      @Semantics.systemDateTime.createdAt: true
       created_at     as CreatedAt,
+
+      @Semantics.user.lastChangedBy: true
       changed_by     as ChangedBy,
+
+      @Semantics.systemDateTime.lastChangedAt: true
       changed_at     as ChangedAt,
+
 
       _Env,
       _OldEnv
