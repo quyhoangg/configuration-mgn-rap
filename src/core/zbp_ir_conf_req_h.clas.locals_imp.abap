@@ -83,7 +83,7 @@
                           %action-submit       = lv_auth_submit
                           %action-approve      = lv_auth_manager
                           %action-reject       = lv_auth_manager
-                          %action-updatereason = lv_auth_manager
+                          %action-updatereason = lv_auth_submit
                           %action-promote      = lv_auth_itadmin
                           %action-apply        = lv_auth_itadmin
                           %action-rollback     = lv_auth_itadmin
