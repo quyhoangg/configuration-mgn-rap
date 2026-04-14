@@ -38,11 +38,30 @@
     CLASS lhc_Req IMPLEMENTATION.
 
       METHOD get_instance_authorizations.
-        " 1. Lấy Role người dùng hiện hành từ bảng zuserrole
-        DATA lv_role TYPE c LENGTH 20.
-        SELECT SINGLE role_level FROM zuserrole
-          WHERE user_id  = @sy-uname AND is_active = @abap_true
-          INTO @lv_role.
+        " 1. Kiểm tra từng role riêng biệt — ZUSERROLE có compound key (USER_ID + MODULE_ID)
+        "    nên SELECT SINGLE không MODULE_ID sẽ trả về row bất kỳ → BUG.
+        "    Thay bằng: check EXISTS cho từng role level.
+        DATA: lv_has_manager TYPE abap_bool,
+              lv_has_itadmin TYPE abap_bool,
+              lv_has_keyuser TYPE abap_bool.
+
+        SELECT SINGLE @abap_true FROM zuserrole
+          WHERE user_id   = @sy-uname
+            AND role_level = @gc_role_manager
+            AND is_active  = @abap_true
+          INTO @lv_has_manager.
+
+        SELECT SINGLE @abap_true FROM zuserrole
+          WHERE user_id   = @sy-uname
+            AND role_level = @gc_role_itadmin
+            AND is_active  = @abap_true
+          INTO @lv_has_itadmin.
+
+        SELECT SINGLE @abap_true FROM zuserrole
+          WHERE user_id   = @sy-uname
+            AND role_level = @gc_role_keyuser
+            AND is_active  = @abap_true
+          INTO @lv_has_keyuser.
 
         " 2. Đọc các record đang xử lý
         READ ENTITIES OF zir_conf_req_h IN LOCAL MODE
@@ -53,26 +72,30 @@
         "    auth-unauthorized → NÚT ẨN HOÀN TOÀN trên UI
         "    auth-allowed      → nút hiện (visibility do features kiểm soát tiếp)
 
-        " Mọi user có role đều được submit
-        DATA(lv_auth_submit) = COND #( WHEN lv_role IS NOT INITIAL
-                                         THEN if_abap_behv=>auth-allowed
-                                         ELSE if_abap_behv=>auth-unauthorized ).
+        " Mọi user có bất kỳ role nào đều được submit
+        DATA(lv_auth_submit) = COND #(
+          WHEN lv_has_manager = abap_true OR lv_has_itadmin = abap_true OR lv_has_keyuser = abap_true
+          THEN if_abap_behv=>auth-allowed
+          ELSE if_abap_behv=>auth-unauthorized ).
 
         " Chỉ MANAGER thấy Approve / Reject
-        DATA(lv_auth_manager) = COND #( WHEN lv_role = 'MANAGER'
-                                          THEN if_abap_behv=>auth-allowed
-                                          ELSE if_abap_behv=>auth-unauthorized ).
+        DATA(lv_auth_manager) = COND #(
+          WHEN lv_has_manager = abap_true
+          THEN if_abap_behv=>auth-allowed
+          ELSE if_abap_behv=>auth-unauthorized ).
 
         " Chỉ IT ADMIN thấy Promote / Rollback / Apply
-        DATA(lv_auth_itadmin) = COND #( WHEN lv_role = 'IT ADMIN'
-                                          THEN if_abap_behv=>auth-allowed
-                                          ELSE if_abap_behv=>auth-unauthorized ).
+        DATA(lv_auth_itadmin) = COND #(
+          WHEN lv_has_itadmin = abap_true
+          THEN if_abap_behv=>auth-allowed
+          ELSE if_abap_behv=>auth-unauthorized ).
 
         " Edit (draft) và Delete chỉ KEY USER và MANAGER thấy
         " (IT ADMIN không cần tạo/xóa request)
-        DATA(lv_auth_edit_del) = COND #( WHEN lv_role = 'KEY USER' OR lv_role = 'MANAGER'
-                                           THEN if_abap_behv=>auth-allowed
-                                           ELSE if_abap_behv=>auth-unauthorized ).
+        DATA(lv_auth_edit_del) = COND #(
+          WHEN lv_has_keyuser = abap_true OR lv_has_manager = abap_true
+          THEN if_abap_behv=>auth-allowed
+          ELSE if_abap_behv=>auth-unauthorized ).
 
         " 4. Áp dụng kết quả cho từng Item
         LOOP AT lt_reqs INTO DATA(ls_req).
