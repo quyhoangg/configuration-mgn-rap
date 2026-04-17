@@ -5,9 +5,9 @@
 *&---------------------------------------------------------------------*
 REPORT zset_userrole_manager.
 
-CONSTANTS: lc_user_id   TYPE syuname VALUE 'DEV-056',
+CONSTANTS: lc_user_id   TYPE syuname VALUE 'DEV-098',
            lc_role      TYPE zde_role_level VALUE 'IT ADMIN',
-           lc_fullname  TYPE c LENGTH 50 VALUE 'DEV-056',
+           lc_fullname  TYPE c LENGTH 50 VALUE 'DEV-098',
            lc_module_id TYPE zde_module_id VALUE 'ALL'.
 
 DATA ls_role TYPE zuserrole.

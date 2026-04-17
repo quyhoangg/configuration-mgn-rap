@@ -15,7 +15,7 @@ define behavior for ZI_MM_SAFE_STOCK alias SafeStock
   field ( readonly, numbering : managed ) ItemId;
 
   field ( readonly : update ) SourceItemId, ConfId;
-  field ( readonly ) LineStatus, VersionNo;
+  field ( readonly ) LineStatus;
   field ( readonly ) CreatedBy, CreatedAt, ChangedBy, ChangedAt;
   field ( mandatory ) EnvId, PlantId, MatGroup, MinQty;
 

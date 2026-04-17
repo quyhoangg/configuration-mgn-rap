@@ -188,7 +188,8 @@
         " Mảng chứa toàn bộ Log (Header + Items) để Insert 1 lần duy nhất
         DATA: lt_audit_log     TYPE STANDARD TABLE OF zauditlog,
               ls_audit_log     TYPE zauditlog,
-              lv_record_exists TYPE abap_boolean. " Khai báo biến check tồn tại 1 lần duy nhất
+              lv_record_exists TYPE abap_boolean, " Khai báo biến check tồn tại 1 lần duy nhất
+              lv_new_version   TYPE i.
 
         " Khai báo biến cho Push Notification
         DATA: lt_notifications TYPE /iwngw/if_notif_provider=>ty_t_notification,
@@ -574,14 +575,17 @@
                   SELECT SINGLE @abap_true FROM zmmsafestock
                     WHERE item_id = @<ss>-source_item_id INTO @lv_record_exists.
                   IF lv_record_exists = abap_true.
+                    lv_new_version = <ss>-version_no + 1.
                     UPDATE zmmsafestock SET
                       min_qty    = @<ss>-min_qty,
-                      version_no = @<ss>-version_no,
+                      version_no = @lv_new_version,
                       req_id     = @<r>-ReqId,
                       changed_by = @sy-uname,
                       changed_at = @lv_now
                     WHERE item_id = @<ss>-source_item_id.
                   ENDIF.
+
+
                 WHEN 'CREATE' OR 'C'.
                   INSERT zmmsafestock FROM @( VALUE zmmsafestock(
                     client     = sy-mandt

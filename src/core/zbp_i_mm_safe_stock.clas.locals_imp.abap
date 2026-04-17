@@ -55,6 +55,26 @@ CLASS lhc_safestock IMPLEMENTATION.
         ) TO reported-safestock.
       ENDIF.
 
+            " ── Validate MatGroup exists in master data ──────────────────────
+      IF entity-MatGroup IS NOT INITIAL.
+        SELECT SINGLE FROM zsd_matl_grp
+          FIELDS @abap_true
+          WHERE matl_grp = @entity-MatGroup
+          INTO @DATA(lv_matgrp_exists).
+
+        IF lv_matgrp_exists IS INITIAL.
+          APPEND VALUE #( %tky = entity-%tky ) TO failed-safestock.
+          APPEND VALUE #(
+            %tky              = entity-%tky
+            %msg              = new_message_with_text(
+              severity = if_abap_behv_message=>severity-error
+              text     = |Material Group '{ entity-MatGroup }' not found| )
+            %element-MatGroup = if_abap_behv=>mk-on
+          ) TO reported-safestock.
+        ENDIF.
+      ENDIF.
+
+
       IF entity-MinQty IS INITIAL OR entity-MinQty <= 0.
         APPEND VALUE #( %tky = entity-%tky ) TO failed-safestock.
         APPEND VALUE #(
